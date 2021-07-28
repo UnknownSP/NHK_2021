@@ -70,8 +70,17 @@
       <remap from="motor8_cmd_val" to="Pick_R_Hand_cmd_pos"/>
     </node>
     
-    <node pkg="nodelet" type="nodelet" name="tr_nodelet_main" args="$(arg nodelet_mode) tr/tr_nodelet_main $(arg manager_name)" />
-    
+    <node pkg="nodelet" type="nodelet" name="tr_nodelet_main" args="$(arg nodelet_mode) tr/tr_nodelet_main $(arg manager_name)" >
+      <param name="R_base_pick_standby" type="double" value="2.0" />
+      <param name="R_base_pick" type="double" value="2.5" />
+      <param name="R_base_load" type="double" value="0.0" /> 
+      <param name="R_height_pick" type="double" value="19" />
+      <param name="R_height_load" type="double" value="5" />
+      <param name="R_height_load_standby" type="double" value="15" /> 
+      <param name="R_hand_pick" type="double" value="-4.65" />
+      <param name="R_hand_load" type="double" value="-1.55" />
+    </node>
+
 <!--Solenoid_Driver-->  
     <node pkg="solenoid_driver_node" type="solenoid_driver_node" name="solenoid" >
       <param name="bid" type="string" value="100" />
