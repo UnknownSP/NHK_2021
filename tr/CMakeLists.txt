@@ -124,7 +124,7 @@ include_directories(
 
 ## Declare a C++ library
 add_library(${PROJECT_NAME}
-   src/task_main_video_1.cpp
+   src/tr_launch_test.cpp
  )
 
 ## Add cmake target dependencies of the library
