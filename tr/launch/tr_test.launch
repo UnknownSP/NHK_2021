@@ -48,7 +48,7 @@
       <remap from="motor4_cmd_val" to="Shot_Power_cmd_pos"/>
     </node>
     <node pkg="nodelet" type="nodelet" name="motor5" args="$(arg nodelet_mode) can_plugins/Md201xNode $(arg manager_name)" >
-      <param name="bid" type="string" value="4d0" />
+      <param name="bid" type="string" value="630" />
       <remap from="motor5_cmd" to="Shot_Angle_cmd"/>
       <remap from="motor5_cmd_val" to="Shot_Angle_cmd_pos"/>
     </node>
@@ -71,14 +71,15 @@
     </node>
     
     <node pkg="nodelet" type="nodelet" name="tr_nodelet_main" args="$(arg nodelet_mode) tr/tr_nodelet_main $(arg manager_name)" >
-      <param name="R_base_pick_standby" type="double" value="2.0" />
-      <param name="R_base_pick" type="double" value="2.5" />
+      <param name="R_base_pick_standby" type="double" value="2.55" />
+      <param name="R_base_pick" type="double" value="3.35" />
       <param name="R_base_load" type="double" value="0.0" /> 
-      <param name="R_height_pick" type="double" value="19" />
-      <param name="R_height_load" type="double" value="5" />
-      <param name="R_height_load_standby" type="double" value="15" /> 
+      <param name="R_height_pick" type="double" value="22.5" />
+      <param name="R_height_load" type="double" value="17" />
+      <param name="R_height_load_standby" type="double" value="38" /> 
       <param name="R_hand_pick" type="double" value="-4.65" />
-      <param name="R_hand_load" type="double" value="-1.55" />
+      <param name="R_hand_load" type="double" value="-1.52" />
+      <param name="shot_power_shooter_init" type="double" value="-32.8" />
     </node>
 
 <!--Solenoid_Driver-->  
