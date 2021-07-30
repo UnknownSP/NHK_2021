@@ -79,7 +79,12 @@
       <param name="R_height_load_standby" type="double" value="38" /> 
       <param name="R_hand_pick" type="double" value="-4.65" />
       <param name="R_hand_load" type="double" value="-1.52" />
-      <param name="shot_power_shooter_init" type="double" value="-32.8" />
+      <param name="shot_power_shooter_init" type="double" value="-32.8" /> 
+      <param name="shot_power_load" type="double" value="-10" />
+      <param name="shot_power_launch_pos_1" type="double" value="-21" /> <!-- weak -->
+      <param name="shot_power_launch_pos_2" type="double" value="-14" /> <!--  | -->
+      <param name="shot_power_launch_pos_3" type="double" value="-7" />  <!--  | -->
+      <param name="shot_power_launch_pos_4" type="double" value="0.0" /> <!-- powerful -->
     </node>
 
 <!--Solenoid_Driver-->  

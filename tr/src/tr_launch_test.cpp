@@ -56,6 +56,16 @@ enum class ControllerCommands : uint16_t
     set_delay_1s,
     delay,
     wait_next_pressed,
+    //-------------------------------------------
+    shooter_release,
+    shooter_grab,
+    shooter_init,
+    shooter_move_load,
+    angle_init,
+    r_hand_shutdown,
+    r_hand_recover,
+    r_hand_homing,
+    //-------------------------------------------
 };
 
 enum class OpMode : uint8_t
@@ -221,6 +231,8 @@ class tr_nodelet_main : public nodelet::Nodelet
     void R_height_move_target(double target);
     void R_hand_move_pick_arrow();
     void R_hand_move_load_arrow();
+    void R_hand_shutdown();
+    void R_hand_recover();
 
     void Shot_Power_move_shooterinit();
     void Shot_Power_move_target(double target);
@@ -244,6 +256,13 @@ class tr_nodelet_main : public nodelet::Nodelet
     double R_hand_load;
 
     double shot_power_shooter_init;
+    double shot_power_load;
+    double shot_power_launch_pos_1;
+    double shot_power_launch_pos_2;
+    double shot_power_launch_pos_3;
+    double shot_power_launch_pos_4;
+
+    
     //----------------------------------------
 
     // flags
@@ -315,6 +334,9 @@ class tr_nodelet_main : public nodelet::Nodelet
     static const std::vector<ControllerCommands> load_test_commands;
     static const std::vector<ControllerCommands> initial_pose;
     static const std::vector<ControllerCommands> manual_all;
+    //------------------------------------------------------------------------
+    static const std::vector<ControllerCommands> Shot_and_SetLoadPos_commands;
+    //------------------------------------------------------------------------
     const std::vector<ControllerCommands> *command_list;
 };
 
@@ -588,6 +610,44 @@ const std::vector<ControllerCommands> tr_nodelet_main::manual_all(
     }
 );
 
+const std::vector<ControllerCommands> tr_nodelet_main::Shot_and_SetLoadPos_commands(
+    {
+        ControllerCommands::r_hand_homing,
+        ControllerCommands::shooter_release,
+        ControllerCommands::set_delay_250ms,
+        ControllerCommands::delay,
+        ControllerCommands::shooter_init,
+        ControllerCommands::angle_init,
+        ControllerCommands::set_delay_1s,
+        ControllerCommands::delay,
+        ControllerCommands::set_delay_1s,
+        ControllerCommands::delay,
+        ControllerCommands::set_delay_1s,
+        ControllerCommands::delay,
+        ControllerCommands::set_delay_1s,
+        ControllerCommands::delay,
+        ControllerCommands::set_delay_1s,
+        ControllerCommands::delay,
+        ControllerCommands::set_delay_1s,
+        ControllerCommands::delay,
+        ControllerCommands::set_delay_1s,
+        ControllerCommands::delay,
+        ControllerCommands::set_delay_1s,
+        ControllerCommands::delay,
+        ControllerCommands::shooter_grab,
+        ControllerCommands::shooter_move_load,
+        ControllerCommands::set_delay_1s,
+        ControllerCommands::delay,
+        ControllerCommands::set_delay_1s,
+        ControllerCommands::delay,
+        ControllerCommands::set_delay_1s,
+        ControllerCommands::delay,
+        ControllerCommands::set_delay_1s,
+        ControllerCommands::delay,
+        ControllerCommands::r_hand_recover,
+    }
+);
+
 void tr_nodelet_main::onInit(){
     nh = getNodeHandle();
     //constructor
@@ -614,6 +674,11 @@ void tr_nodelet_main::onInit(){
     _nh.param("R_hand_pick", this->R_hand_pick, 0.0);
     _nh.param("R_hand_load", this->R_hand_load, 0.0);
     _nh.param("shot_power_shooter_init", this->shot_power_shooter_init, 0.0);
+    _nh.param("shot_power_load", this->shot_power_load, 0.0);
+    _nh.param("shot_power_launch_pos_1", this->shot_power_launch_pos_1, 0.0);
+    _nh.param("shot_power_launch_pos_2", this->shot_power_launch_pos_2, 0.0);
+    _nh.param("shot_power_launch_pos_3", this->shot_power_launch_pos_3, 0.0);
+    _nh.param("shot_power_launch_pos_4", this->shot_power_launch_pos_4, 0.0);
 
   	// related to grab and load the arrow 
     //_nh.param("roll_arm_radian", this->ArmRollRadian, 0.0);
@@ -717,6 +782,21 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
     }
     if(!this->_command_ongoing)
     {   
+        //------------------------------------------------------------
+        if(_righttrigger){
+            Pick_R_Hand_Homing();
+            Pick_R_Base_Homing();
+            Pick_R_Height_Homing();
+            Shot_Angle_Homing();
+            Shot_Power_Homing();
+        }
+        if(_lefttrigger){
+            this->command_list = &Shot_and_SetLoadPos_commands;
+            _command_ongoing = true;
+        }
+        //------------------------------------------------------------
+
+
         if(_padx == -1){
             Shot_Angle_move_initial();
         }else if(_padx == 1){
@@ -1147,24 +1227,34 @@ void tr_nodelet_main::R_hand_move_load_arrow(void){
     this->Pick_R_Hand_Pos_pub.publish(this->Pick_R_hand_pos_msg);
 }
 
+void tr_nodelet_main::R_hand_shutdown(void){
+    this->act_conf_cmd_msg.data = (uint8_t)MotorCommands::shutdown_cmd;
+    this->Pick_R_Hand_Cmd_pub.publish(this->act_conf_cmd_msg);
+}
+
+void tr_nodelet_main::R_hand_recover(void){
+    this->act_conf_cmd_msg.data = (uint8_t)MotorCommands::recover_cmd;
+    this->Pick_R_Hand_Cmd_pub.publish(this->act_conf_cmd_msg);
+}
+
 void tr_nodelet_main::Shot_Power_move_shooterinit(void){
     this->shot_power_pos_msg.data = this->shot_power_shooter_init;
-    this->Shot_Power_Pos_pub.publish(shot_power_pos_msg);
+    this->Shot_Power_Pos_pub.publish(this->shot_power_pos_msg);
 }
 
 void tr_nodelet_main::Shot_Power_move_target(double target){
     this->shot_power_pos_msg.data = target;
-    this->Shot_Power_Pos_pub.publish(shot_power_pos_msg);
+    this->Shot_Power_Pos_pub.publish(this->shot_power_pos_msg);
 }
 
 void tr_nodelet_main::Shot_Angle_move_initial(void){
     this->shot_angle_pos_msg.data = 0.0;
-    this->Shot_Angle_Pos_pub.publish(shot_angle_pos_msg);
+    this->Shot_Angle_Pos_pub.publish(this->shot_angle_pos_msg);
 }
 
 void tr_nodelet_main::Shot_Angle_move_target(double target){
     this->shot_angle_pos_msg.data = target;
-    this->Shot_Angle_Pos_pub.publish(shot_angle_pos_msg);
+    this->Shot_Angle_Pos_pub.publish(this->shot_angle_pos_msg);
 }
 
 void tr_nodelet_main::Cyl_base_pick(void){
@@ -1421,6 +1511,46 @@ void tr_nodelet_main::control_timer_callback(const ros::TimerEvent &event)
             this->_delay_s = 0;
             this->currentCommandIndex++;
         }
+    }
+    else if (currentCommand == ControllerCommands::shooter_release)
+    {
+        this->Cyl_shooter_release();
+        this->currentCommandIndex++;
+    }
+    else if (currentCommand == ControllerCommands::shooter_grab)
+    {
+        this->Cyl_shooter_grab();
+        this->currentCommandIndex++;
+    }
+    else if (currentCommand == ControllerCommands::shooter_init)
+    {   
+        this->Shot_Power_move_shooterinit();
+        this->currentCommandIndex++;
+    }
+    else if (currentCommand == ControllerCommands::shooter_move_load)
+    {
+        this->Shot_Power_move_target(this->shot_power_load);
+        this->currentCommandIndex++;
+    }
+    else if (currentCommand == ControllerCommands::angle_init)
+    {
+        this->Shot_Angle_move_initial();
+        this->currentCommandIndex++;
+    }
+    else if (currentCommand == ControllerCommands::r_hand_shutdown)
+    {
+        this->R_hand_shutdown();
+        this->currentCommandIndex++;
+    }
+    else if (currentCommand == ControllerCommands::r_hand_recover)
+    {
+        this->R_hand_recover();
+        this->currentCommandIndex++;
+    }
+    else if (currentCommand == ControllerCommands::r_hand_homing)
+    {
+        this->Pick_R_Hand_Homing();
+        this->currentCommandIndex++;
     }
     
     if(this->command_list->size() <= (int)this->currentCommandIndex)
