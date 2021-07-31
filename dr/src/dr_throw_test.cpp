@@ -215,6 +215,9 @@ private:
     double Pos_1_RotStart_deg;
     double Pos_2_RotStart_deg;
     double Pos_3_RotStart_deg;
+    double Pos_1_RotStop_cur;
+    double Pos_2_RotStop_cur;
+    double Pos_3_RotStop_cur;
 
     double Arrow_Pick_Arm_deg;
     double Arrow_Adjust_Arm_deg;
@@ -332,6 +335,7 @@ const std::vector<ControllerCommands> dr_nodelet_main::launch_short_test_command
         ControllerCommands::launch_short_start,
         ControllerCommands::Pitch_MV_Zero,
         ControllerCommands::launch_and_home,
+        ControllerCommands::Pitch_Homing,
     }
 );
 
@@ -341,6 +345,7 @@ const std::vector<ControllerCommands> dr_nodelet_main::launch_medium_test_comman
         ControllerCommands::launch_medium_start,
         ControllerCommands::Pitch_MV_Zero,
         ControllerCommands::launch_and_home,
+        ControllerCommands::Pitch_Homing,
     }
 );
 const std::vector<ControllerCommands> dr_nodelet_main::launch_long_test_commands(
@@ -349,6 +354,7 @@ const std::vector<ControllerCommands> dr_nodelet_main::launch_long_test_commands
         ControllerCommands::launch_long_start,
         ControllerCommands::Pitch_MV_Zero,
         ControllerCommands::launch_and_home,
+        ControllerCommands::Pitch_Homing,
     }
 );
 
@@ -566,6 +572,10 @@ void dr_nodelet_main::onInit(void)
     _nh.param("Pos_1_RotStart_deg", Pos_1_RotStart_deg, 0.0);
     _nh.param("Pos_2_RotStart_deg", Pos_2_RotStart_deg, 0.0);
     _nh.param("Pos_3_RotStart_deg", Pos_3_RotStart_deg, 0.0);
+
+    _nh.param("Pos_1_RotStop_cur", Pos_1_RotStop_cur, 0.0);
+    _nh.param("Pos_2_RotStop_cur", Pos_2_RotStop_cur, 0.0);
+    _nh.param("Pos_3_RotStop_cur", Pos_3_RotStop_cur, 0.0);
 
     nh.getParam("ButtonA", ButtonA);
     nh.getParam("ButtonB", ButtonB);
@@ -1071,21 +1081,25 @@ void dr_nodelet_main::control_timer_callback(const ros::TimerEvent &event)
             if(this->_LaunchSet_3 && this->throw_position_observed <= this->launch_long_pos)
             {
                 this->_launch_angle_reached = true;
+                this->arm_vel_msg.data = this->Pos_3_RotStop_cur;
+                this->ArmVal_pub.publish(arm_vel_msg);
             }
             else if(this->_LaunchSet_2 && this->throw_position_observed <= this->launch_medium_pos)
             {
                 this->_launch_angle_reached = true;
+                this->arm_vel_msg.data = this->Pos_2_RotStop_cur;
+                this->ArmVal_pub.publish(arm_vel_msg);
             }
             else if(this->_LaunchSet_1 && this->throw_position_observed <= this->launch_short_pos)
             {
                 this->_launch_angle_reached = true;
+                this->arm_vel_msg.data = this->Pos_1_RotStop_cur;
+                this->ArmVal_pub.publish(arm_vel_msg);
             }
             NODELET_INFO("%f",this->throw_position_observed);
         }
         
-        this->Cyl_Arm_release_arrow();
-        this->arm_vel_msg.data = 0;
-        this->ArmVal_pub.publish(arm_vel_msg);
+        //this->Cyl_Arm_release_arrow();
         //std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         //this->arm_vel_msg.data = 5;
         //this->ArmVal_pub.publish(arm_vel_msg);
@@ -1118,15 +1132,18 @@ void dr_nodelet_main::control_timer_callback(const ros::TimerEvent &event)
     }
     else if(currentCommand == ControllerCommands::Pitch_MV_Zero)
     {
-        this->pitch_right_pos_msg.data = 0.0;
+        this->pitch_right_pos_msg.data = -0.5;
         this->PitchRightPos_pub.publish(this->pitch_right_pos_msg);
-        this->pitch_left_pos_msg.data = 0.0;
+        this->pitch_left_pos_msg.data = 0.5;
         this->PitchLeftPos_pub.publish(this->pitch_left_pos_msg);
         this->currentCommandIndex++;
         NODELET_INFO("pitch zero");
     }
     else if(currentCommand == ControllerCommands::Pitch_MV_init)
-    {
+    {   
+        act_conf_cmd_msg.data = (uint8_t)MotorCommands::recover_cmd;
+        PitchRightCmd_pub.publish(act_conf_cmd_msg);
+        PitchLeftCmd_pub.publish(act_conf_cmd_msg);
         this->pitch_right_pos_msg.data = this->pitchright_init_deg;
         this->PitchRightPos_pub.publish(this->pitch_right_pos_msg);
         this->pitch_left_pos_msg.data = this->pitchleft_init_deg;

@@ -65,6 +65,8 @@ enum class ControllerCommands : uint16_t
     r_hand_shutdown,
     r_hand_recover,
     r_hand_homing,
+
+    riseflag_shooter_pos_load,
     //-------------------------------------------
 };
 
@@ -261,8 +263,23 @@ class tr_nodelet_main : public nodelet::Nodelet
     double shot_power_launch_pos_2;
     double shot_power_launch_pos_3;
     double shot_power_launch_pos_4;
+    double shot_angle_launch_pos_1;
+    double shot_angle_launch_pos_2;
+    double shot_angle_launch_pos_3;
+    double shot_angle_launch_pos_4;
 
-    
+    int Pick_mode = -1;
+    int R_load_mode = -1;
+    int L_load_mode = -1;
+
+    bool _loaded = false;
+    bool _R_loading = false;
+    bool _L_loading = false;
+
+    bool _shooter_pos_load = false;
+
+    double R_height_adjust = 0.0;
+    double L_height_adjust = 0.0;
     //----------------------------------------
 
     // flags
@@ -612,20 +629,13 @@ const std::vector<ControllerCommands> tr_nodelet_main::manual_all(
 
 const std::vector<ControllerCommands> tr_nodelet_main::Shot_and_SetLoadPos_commands(
     {
-        ControllerCommands::r_hand_homing,
+        ControllerCommands::r_hand_shutdown,
         ControllerCommands::shooter_release,
         ControllerCommands::set_delay_250ms,
         ControllerCommands::delay,
         ControllerCommands::shooter_init,
         ControllerCommands::angle_init,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
+        //ControllerCommands::r_hand_homing,
         ControllerCommands::set_delay_1s,
         ControllerCommands::delay,
         ControllerCommands::set_delay_1s,
@@ -635,16 +645,26 @@ const std::vector<ControllerCommands> tr_nodelet_main::Shot_and_SetLoadPos_comma
         ControllerCommands::set_delay_1s,
         ControllerCommands::delay,
         ControllerCommands::shooter_grab,
+        ControllerCommands::set_delay_250ms,
+        ControllerCommands::delay,
         ControllerCommands::shooter_move_load,
         ControllerCommands::set_delay_1s,
         ControllerCommands::delay,
         ControllerCommands::set_delay_1s,
         ControllerCommands::delay,
+        ControllerCommands::r_hand_homing,
         ControllerCommands::set_delay_1s,
         ControllerCommands::delay,
         ControllerCommands::set_delay_1s,
+        ControllerCommands::delay,
+        ControllerCommands::set_delay_1s,
+        ControllerCommands::delay,
+        ControllerCommands::set_delay_1s,
+        ControllerCommands::delay,
+        ControllerCommands::set_delay_500ms,
         ControllerCommands::delay,
         ControllerCommands::r_hand_recover,
+        ControllerCommands::riseflag_shooter_pos_load,
     }
 );
 
@@ -679,6 +699,10 @@ void tr_nodelet_main::onInit(){
     _nh.param("shot_power_launch_pos_2", this->shot_power_launch_pos_2, 0.0);
     _nh.param("shot_power_launch_pos_3", this->shot_power_launch_pos_3, 0.0);
     _nh.param("shot_power_launch_pos_4", this->shot_power_launch_pos_4, 0.0);
+    _nh.param("shot_angle_launch_pos_1", this->shot_angle_launch_pos_1, 0.0);
+    _nh.param("shot_angle_launch_pos_2", this->shot_angle_launch_pos_2, 0.0);
+    _nh.param("shot_angle_launch_pos_3", this->shot_angle_launch_pos_3, 0.0);
+    _nh.param("shot_angle_launch_pos_4", this->shot_angle_launch_pos_4, 0.0);
 
   	// related to grab and load the arrow 
     //_nh.param("roll_arm_radian", this->ArmRollRadian, 0.0);
@@ -749,6 +773,10 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
     static bool _Cyl_shooter = false;
     static bool _lb_enable = false;
     static bool _Cyl_R_hand = false;
+    static bool _y_enable = false;
+    static bool _b_enable = false;
+    static bool _a_enable = false;
+    static bool _x_enable = false;
     
     static double shooter_pull_length = 0.0;
 
@@ -771,7 +799,6 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
     this->_back  = joy->buttons[ButtonBack];
 
 
-
     if (_start)
     {
         this->recover();
@@ -784,19 +811,182 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
     {   
         //------------------------------------------------------------
         if(_righttrigger){
+            //Cyl_shooter_release();
             Pick_R_Hand_Homing();
             Pick_R_Base_Homing();
             Pick_R_Height_Homing();
             Shot_Angle_Homing();
             Shot_Power_Homing();
         }
-        if(_lefttrigger){
+        if(_rb && _lb && !_R_loading && !_L_loading){
+            Cyl_shooter_release();
+        }
+        //R_height_adjust -= joy->buttons[ButtonRightThumb];
+        //R_height_adjust += joy->buttons[ButtonLeftThumb];
+        //R_height_move_target(R_height_adjust);
+        if(_lb && _lb_enable){
+            if(_Cyl_R_hand){
+                Cyl_R_hand_grab();
+                _Cyl_R_hand = false;
+            }else{
+                Cyl_R_hand_release();
+                _Cyl_R_hand = true;
+            }
+            _lb_enable = false;
+        }else{
+            _lb_enable = true;
+        }
+        if(!_R_loading && !_L_loading && _lefttrigger){
+            _loaded = false;
+            _shooter_pos_load = false;
             this->command_list = &Shot_and_SetLoadPos_commands;
             _command_ongoing = true;
         }
+        if(_y && _y_enable){
+            if(Pick_mode == 3){
+                Pick_mode = 0;
+            }else{
+                Pick_mode++;
+            }
+            _y_enable = false;
+        }else{
+            _y_enable = true;
+        }
+        if(_a && _a_enable){
+            if(Pick_mode <= 0){
+                Pick_mode = 3;
+            }else{
+                Pick_mode--;
+            }
+            _a_enable = false;
+        }else{
+            _a_enable = true;
+        }
+        if(_x && _x_enable){
+            if(_shooter_pos_load){
+                if(R_load_mode == 1){
+                    R_load_mode = 0;
+                }else{
+                    R_load_mode++;
+                }
+            }
+            _x_enable = false;
+        }else{
+            _x_enable = true;
+        }
+        if(_b && _b_enable){
+            if(_shooter_pos_load){
+                if(L_load_mode == 1){
+                    L_load_mode = 0;
+                }else{
+                    L_load_mode++;
+                }
+            }
+            _b_enable = false;
+        }else{
+            _b_enable = true;
+        }
+        if(_loaded && !_R_loading && !_L_loading){
+            if(_pady == 1){
+                R_hand_shutdown();
+                Shot_Power_move_target(shot_power_launch_pos_1);
+                Shot_Angle_move_target(shot_angle_launch_pos_1);
+            }
+            if(_padx == 1){
+                R_hand_shutdown();
+                Shot_Power_move_target(shot_power_launch_pos_2);
+                Shot_Angle_move_target(shot_angle_launch_pos_2);
+            }
+            if(_padx == -1){
+                R_hand_shutdown();
+                Shot_Power_move_target(shot_power_launch_pos_3);
+                Shot_Angle_move_target(shot_angle_launch_pos_3);
+            }
+            if(_pady == -1){
+                R_hand_shutdown();
+                Shot_Power_move_target(shot_power_launch_pos_4);
+                Shot_Angle_move_target(shot_angle_launch_pos_4);
+            }
+            _shooter_pos_load = false;
+        }
+        if(_shooter_pos_load && (_x || _b || (joy->buttons[ButtonRightThumb] != 0.0) || (joy->buttons[ButtonLeftThumb] != 0.0))){
+            Pick_mode = -1;
+            if(_x){
+                if(!_L_loading){
+                    _R_loading = true;
+                }
+                R_height_adjust = 0.0;
+            }
+            if(_b){
+                if(!_R_loading){
+                    _L_loading = true;
+                }
+                L_height_adjust = 0.0;
+            }
+            if(_R_loading){
+                switch (R_load_mode)
+                {
+                case 0:
+                    Cyl_base_load();
+                    R_base_move_load_arrow();
+                    R_hand_move_load_arrow();
+                    R_height_adjust += joy->buttons[ButtonLeftThumb] * 2;
+                    R_height_adjust -= joy->buttons[ButtonRightThumb] * 2;
+                    R_height_move_target(this->R_height_load_standby + R_height_adjust);
+                    break;
+                case 1:
+                    Cyl_R_hand_release();
+                    Cyl_base_pick();
+                    R_base_move_pick_standby_arrow();
+                    R_height_move_pick_arrow();
+                    R_hand_move_pick_arrow();
+                    R_height_adjust = 0.0;
+                    _R_loading = false;
+                    _loaded = true;
+                    break;
+                }
+            }
+            if(_L_loading){
+                _L_loading = false;
+                _loaded = true;
+            }
+        }
+        if(!_R_loading && !_L_loading && (_y || _a)){
+            R_load_mode = -1;
+            L_load_mode = -1;
+            switch (Pick_mode)
+            {
+            case 0:
+                Cyl_R_hand_release();
+                Cyl_base_pick();
+                R_base_move_pick_standby_arrow();
+                R_height_move_pick_arrow();
+                R_hand_move_pick_arrow();
+                break;
+            
+            case 1:
+                R_base_move_pick_arrow();
+                R_height_move_pick_arrow();
+                R_hand_move_pick_arrow();
+                break;
+
+            case 2:
+                Cyl_R_hand_grab();
+                R_base_move_pick_arrow();
+                R_height_move_pick_arrow();
+                R_hand_move_pick_arrow();
+                break;
+
+            case 3:
+                R_base_move_pick_arrow();
+                R_height_move_load_standby_arrow();
+                R_hand_move_pick_arrow();
+                break;
+            }
+        }
         //------------------------------------------------------------
 
-
+        /*
         if(_padx == -1){
             Shot_Angle_move_initial();
         }else if(_padx == 1){
@@ -902,6 +1092,8 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
         }else{
             //Cyl_shooter_release();
         }
+        */
+
         //if(!this->_has_loaded)
         //{
         //    if (_y)
@@ -1550,6 +1742,11 @@ void tr_nodelet_main::control_timer_callback(const ros::TimerEvent &event)
     else if (currentCommand == ControllerCommands::r_hand_homing)
     {
         this->Pick_R_Hand_Homing();
+        this->currentCommandIndex++;
+    }
+    else if (currentCommand == ControllerCommands::riseflag_shooter_pos_load)
+    {
+        this->_shooter_pos_load = true;
         this->currentCommandIndex++;
     }
     
