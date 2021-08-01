@@ -65,12 +65,14 @@
       <param name="launch_short_pos" type="double" value="0.85" />
       <param name="Pos_1_RotStart_deg" type="double" value="1.5" />
       <param name="Pos_1_RotStop_cur" type="double" value="20" />
+
     	<param name="launch_medium_vel" type="double" value="-50" />
     	<param name="launch_medium_pos" type="double" value="1.2" />
       <param name="Pos_2_RotStart_deg" type="double" value="1.52" />
       <param name="Pos_2_RotStop_cur" type="double" value="30" />
+
       <param name="launch_long_vel" type="double" value="-200" />
-    	<param name="launch_long_pos" type="double" value="0.95" />
+    	<param name="launch_long_pos" type="double" value="1.2" />
       <param name="Pos_3_RotStart_deg" type="double" value="1.6" />
       <param name="Pos_3_RotStop_cur" type="double" value="40" />
 
@@ -82,11 +84,13 @@
       <param name="pitchleftpos_1_deg" type="double" value="2.15" />
       <param name="pitchrightpos_2_deg" type="double" value="-2.05" />
       <param name="pitchleftpos_2_deg" type="double" value="2.15" />
-      <param name="pitchrightpos_3_deg" type="double" value="-1.55" />
-      <param name="pitchleftpos_3_deg" type="double" value="1.65" />
+      <param name="pitchrightpos_3_deg" type="double" value="-1.65" />
+      <param name="pitchleftpos_3_deg" type="double" value="1.75" />
 
       <param name="Arrow_Pick_Arm_deg" type="double" value="2.2" />
       <param name="Arrow_Adjust_Arm_deg" type="double" value="1.1" />
+      <param name="Arrow_Pick_Rack_Arm_deg" type="double" value="-1.0" />
+      <param name="Arrow_Adjust_Rack_Arm_deg" type="double" value="0.9" />
     	<!-- <param name="launch_short_vel" type="double" value="14.75" /> -->
     	<!-- <param name="launch_short_pos" type="double" value="7.7" /> -->
       <!-- 2m80 iikanzi

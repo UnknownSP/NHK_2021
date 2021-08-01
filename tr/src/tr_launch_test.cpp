@@ -222,7 +222,7 @@ class tr_nodelet_main : public nodelet::Nodelet
     int OpModecurrentindex = -1;
     OpMode current_OpMode;
 
-    int _delay_s = 0;
+    double _delay_s = 0;
 
     void shutdown();
     void recover();
@@ -233,6 +233,9 @@ class tr_nodelet_main : public nodelet::Nodelet
     void change_OpMode();
 
     //----------------------------------------
+    void delay_start(double delay_s);
+    double delay_time = 0.0;
+
     void Shot_Power_Homing();
     void Shot_Angle_Homing();
     void Pick_R_Base_Homing();
@@ -317,6 +320,8 @@ class tr_nodelet_main : public nodelet::Nodelet
     bool _L_loading = false;
 
     bool _shooter_pos_load = false;
+
+    double shot_power_adjust = 0.0;
 
     double R_height_adjust = 0.0;
     double L_height_adjust = 0.0;
@@ -705,8 +710,8 @@ const std::vector<ControllerCommands> tr_nodelet_main::Shot_and_SetLoadPos_comma
         ControllerCommands::delay,
         ControllerCommands::set_delay_500ms,
         ControllerCommands::delay,
-        ControllerCommands::r_hand_recover,
-        ControllerCommands::l_hand_recover,
+        //ControllerCommands::r_hand_recover,
+        //ControllerCommands::l_hand_recover,
         ControllerCommands::riseflag_shooter_pos_load,
     }
 );
@@ -864,6 +869,14 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
     if (_start)
     {
         this->recover();
+        _R_loading = false;
+        _L_loading = false;
+        _loaded = false;
+        _shooter_pos_load = false;
+        Pick_mode = -1;
+        R_load_mode = -1;
+        L_load_mode = -1;
+        shot_power_adjust = 0.0;
     }
     if (_back)
     {
@@ -920,7 +933,7 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
             _command_ongoing = true;
         }
         if(_y && _y_enable){
-            if(Pick_mode == 3){
+            if(Pick_mode == 5){
                 Pick_mode = 0;
             }else{
                 Pick_mode++;
@@ -931,7 +944,7 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
         }
         if(_a && _a_enable){
             if(Pick_mode <= 0){
-                Pick_mode = 3;
+                Pick_mode = 5;
             }else{
                 Pick_mode--;
             }
@@ -941,7 +954,7 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
         }
         if(_x && _x_enable){
             if(_shooter_pos_load){
-                if(R_load_mode == 1){
+                if(R_load_mode == 2){
                     R_load_mode = 0;
                 }else{
                     R_load_mode++;
@@ -953,7 +966,7 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
         }
         if(_b && _b_enable){
             if(_shooter_pos_load){
-                if(L_load_mode == 1){
+                if(L_load_mode == 2){
                     L_load_mode = 0;
                 }else{
                     L_load_mode++;
@@ -963,31 +976,38 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
         }else{
             _b_enable = true;
         }
-        if(_loaded && !_R_loading && !_L_loading){
+        if(_loaded && !_R_loading && !_L_loading ){
+            shot_power_adjust += joy->buttons[ButtonLeftThumb] * 2;
+            shot_power_adjust -= joy->buttons[ButtonRightThumb] * 2;
             if(_pady == 1){
-                R_hand_shutdown();
-                Shot_Power_move_target(shot_power_launch_pos_1);
+                Pick_R_Hand_Homing();
+                Pick_L_Hand_Homing();
+                Shot_Power_move_target(shot_power_launch_pos_1 + shot_power_adjust);
                 Shot_Angle_move_target(shot_angle_launch_pos_1);
             }
             if(_padx == 1){
-                R_hand_shutdown();
-                Shot_Power_move_target(shot_power_launch_pos_2);
+                Pick_R_Hand_Homing();
+                Pick_L_Hand_Homing();
+                Shot_Power_move_target(shot_power_launch_pos_2 + shot_power_adjust);
                 Shot_Angle_move_target(shot_angle_launch_pos_2);
             }
             if(_padx == -1){
-                R_hand_shutdown();
-                Shot_Power_move_target(shot_power_launch_pos_3);
+                Pick_R_Hand_Homing();
+                Pick_L_Hand_Homing();
+                Shot_Power_move_target(shot_power_launch_pos_3 + shot_power_adjust);
                 Shot_Angle_move_target(shot_angle_launch_pos_3);
             }
             if(_pady == -1){
-                R_hand_shutdown();
-                Shot_Power_move_target(shot_power_launch_pos_4);
+                Pick_R_Hand_Homing();
+                Pick_L_Hand_Homing();
+                Shot_Power_move_target(shot_power_launch_pos_4 + shot_power_adjust);
                 Shot_Angle_move_target(shot_angle_launch_pos_4);
             }
             _shooter_pos_load = false;
         }
-        if(_shooter_pos_load && (_x || _b || (joy->buttons[ButtonRightThumb] != 0.0) || (joy->buttons[ButtonLeftThumb] != 0.0))){
+        if(!_loaded && _shooter_pos_load && (_x || _b || (joy->buttons[ButtonRightThumb] != 0.0) || (joy->buttons[ButtonLeftThumb] != 0.0))){
             Pick_mode = -1;
+            shot_power_adjust = 0.0;
             if(_x){
                 if(!_L_loading){
                     _R_loading = true;
@@ -1004,6 +1024,9 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
                 switch (R_load_mode)
                 {
                 case 0:
+                    Pick_R_Hand_Homing();
+                    break;
+                case 1:
                     Cyl_base_load();
                     R_base_move_load_arrow();
                     R_hand_move_load_arrow();
@@ -1011,15 +1034,22 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
                     R_height_adjust -= joy->buttons[ButtonRightThumb] * 2;
                     R_height_move_target(this->R_height_load_standby + R_height_adjust);
                     break;
-                case 1:
+                case 2:
                     Cyl_R_hand_release();
                     Cyl_base_pick();
                     R_base_move_pick_standby_arrow();
                     R_height_move_pick_arrow();
+                    Pick_R_Hand_Homing();
+                    delay_start(1.5);
+                    Pick_R_Hand_Homing();
+                    R_hand_recover();
                     R_hand_move_pick_arrow();
+                    delay_start(1.5);
+                    R_hand_shutdown();
                     R_height_adjust = 0.0;
                     _R_loading = false;
                     _loaded = true;
+                    shot_power_adjust = 0.0;
                     break;
                 }
             }
@@ -1027,6 +1057,9 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
                 switch (L_load_mode)
                 {
                 case 0:
+                    Pick_L_Hand_Homing();
+                    break;
+                case 1:
                     Cyl_base_load();
                     L_base_move_load_arrow();
                     L_hand_move_load_arrow();
@@ -1034,15 +1067,22 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
                     L_height_adjust -= joy->buttons[ButtonRightThumb] * 2;
                     L_height_move_target(this->L_height_load_standby + L_height_adjust);
                     break;
-                case 1:
+                case 2:
                     Cyl_L_hand_release();
                     Cyl_base_pick();
                     L_base_move_pick_standby_arrow();
                     L_height_move_pick_arrow();
+                    Pick_L_Hand_Homing();
+                    delay_start(1.5);
+                    Pick_L_Hand_Homing();
+                    L_hand_recover();
                     L_hand_move_pick_arrow();
+                    delay_start(1.5);
+                    L_hand_shutdown();
                     L_height_adjust = 0.0;
                     _L_loading = false;
                     _loaded = true;
+                    shot_power_adjust = 0.0;
                     break;
                 }
             }
@@ -1053,44 +1093,63 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
             switch (Pick_mode)
             {
             case 0:
+                Pick_R_Hand_Homing();
+                Pick_L_Hand_Homing();
+                break;
+
+            case 1:
+                Pick_R_Hand_Homing();
+                Pick_L_Hand_Homing();
+                break;
+
+            case 2:
                 Cyl_R_hand_release();
                 Cyl_base_pick();
                 R_base_move_pick_standby_arrow();
                 R_height_move_pick_arrow();
-                R_hand_move_pick_arrow();
                 Cyl_L_hand_release();
                 L_base_move_pick_standby_arrow();
                 L_height_move_pick_arrow();
+                delay_start(1.5);
+                Pick_R_Hand_Homing();
+                Pick_L_Hand_Homing();
+                delay_start(0.2);
+                R_hand_recover();
+                L_hand_recover();
+                R_hand_move_pick_arrow();
                 L_hand_move_pick_arrow();
+                delay_start(1.5);
+                R_hand_shutdown();
+                L_hand_shutdown();
                 break;
             
-            case 1:
+            case 3:
                 R_base_move_pick_arrow();
                 R_height_move_pick_arrow();
-                R_hand_move_pick_arrow();
+                //R_hand_move_pick_arrow();
                 L_base_move_pick_arrow();
                 L_height_move_pick_arrow();
-                L_hand_move_pick_arrow();
+                //L_hand_move_pick_arrow();
                 break;
 
-            case 2:
+            case 4:
                 Cyl_R_hand_grab();
                 R_base_move_pick_arrow();
                 R_height_move_pick_arrow();
-                R_hand_move_pick_arrow();
+                //R_hand_move_pick_arrow();
                 Cyl_L_hand_grab();
                 L_base_move_pick_arrow();
                 L_height_move_pick_arrow();
-                L_hand_move_pick_arrow();
+                //L_hand_move_pick_arrow();
                 break;
 
-            case 3:
+            case 5:
                 R_base_move_pick_arrow();
                 R_height_move_load_standby_arrow();
-                R_hand_move_pick_arrow();
+                //R_hand_move_pick_arrow();
                 L_base_move_pick_arrow();
                 L_height_move_load_standby_arrow();
-                L_hand_move_pick_arrow();
+                //L_hand_move_pick_arrow();
                 break;
             }
         }
@@ -1687,6 +1746,12 @@ void tr_nodelet_main::Cyl_shooter_release(void){
     this->lastSolenoidOrder |= (uint8_t)SolenoidValveCommands::shooter_cmd;
     this->solenoid_order_msg.data = this->lastSolenoidOrder;
     this->SolenoidOrder_pub.publish(this->solenoid_order_msg);
+}
+
+void tr_nodelet_main::delay_start(double delay_s)
+{
+    this->delay_time = ros::Time::now().toSec() + delay_s;
+    while(this->delay_time > ros::Time::now().toSec());
 }
 
 void tr_nodelet_main::control_timer_callback(const ros::TimerEvent &event)

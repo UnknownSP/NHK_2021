@@ -51,6 +51,10 @@ enum class ControllerCommands : uint16_t
     ArmRotateToPickArrow,
     ArmRotateToAdjustArrow,
     ArmRotateToZeroDeg,
+    ArmRotateToPickRackArrow,
+    ArmRotateToAdjustRackArrow,
+
+    WaitPickRackArrow,
 
     adjust_arm_to_launch,
 // launch_and_home the arrow
@@ -144,6 +148,9 @@ private:
     void clear_flags();
     void set_delay(double delay_s);
 
+    void delay_start(double delay_s);
+    double delay_time = 0.0;
+
     void change_OpMode();
 
     ros::NodeHandle nh;
@@ -191,7 +198,7 @@ private:
 	/**********************/
     ros::Timer control_timer;
 
-    int _delay_s = 0;
+    double _delay_s = 0;
 
     double launch_long_vel;
     double launch_medium_vel;
@@ -221,6 +228,8 @@ private:
 
     double Arrow_Pick_Arm_deg;
     double Arrow_Adjust_Arm_deg;
+    double Arrow_Pick_Rack_Arm_deg;
+    double Arrow_Adjust_Rack_Arm_deg;
 
 	double throw_position_observed = 0;
 
@@ -299,6 +308,7 @@ private:
     static const std::vector<ControllerCommands> load_test_commands;
     static const std::vector<ControllerCommands> SetLaunchPosi_commands;
     static const std::vector<ControllerCommands> ArmPickup_commands;
+    static const std::vector<ControllerCommands> ArmPickup_rack_commands;
     static const std::vector<ControllerCommands> initial_pose;
     static const std::vector<ControllerCommands> manual_all;
     const std::vector<ControllerCommands> *command_list;
@@ -336,6 +346,7 @@ const std::vector<ControllerCommands> dr_nodelet_main::launch_short_test_command
         ControllerCommands::Pitch_MV_Zero,
         ControllerCommands::launch_and_home,
         ControllerCommands::Pitch_Homing,
+        ControllerCommands::Pitch_Homing,
     }
 );
 
@@ -346,6 +357,7 @@ const std::vector<ControllerCommands> dr_nodelet_main::launch_medium_test_comman
         ControllerCommands::Pitch_MV_Zero,
         ControllerCommands::launch_and_home,
         ControllerCommands::Pitch_Homing,
+        ControllerCommands::Pitch_Homing,
     }
 );
 const std::vector<ControllerCommands> dr_nodelet_main::launch_long_test_commands(
@@ -354,6 +366,7 @@ const std::vector<ControllerCommands> dr_nodelet_main::launch_long_test_commands
         ControllerCommands::launch_long_start,
         ControllerCommands::Pitch_MV_Zero,
         ControllerCommands::launch_and_home,
+        ControllerCommands::Pitch_Homing,
         ControllerCommands::Pitch_Homing,
     }
 );
@@ -419,6 +432,7 @@ const std::vector<ControllerCommands> dr_nodelet_main::initial_pose(
         //ControllerCommands::set_delay_1s,
         //ControllerCommands::delay,
         ControllerCommands::arm_home,
+        ControllerCommands::Pitch_Homing,
         //ControllerCommands::set_delay_1s,
         //ControllerCommands::delay,
     } 
@@ -450,6 +464,7 @@ const std::vector<ControllerCommands> dr_nodelet_main::SetLaunchPosi_commands(
 
 const std::vector<ControllerCommands> dr_nodelet_main::ArmPickup_commands(
     {
+        ControllerCommands::Pitch_Homing,
         ControllerCommands::Cyl_Catch_grab,
         ControllerCommands::Cyl_Arm_release,
         ControllerCommands::set_delay_500ms,
@@ -474,6 +489,38 @@ const std::vector<ControllerCommands> dr_nodelet_main::ArmPickup_commands(
         ControllerCommands::delay,
         ControllerCommands::Cyl_Arm_grab,
         ControllerCommands::Cyl_Lift_down,
+        ControllerCommands::recover_position,
+        ControllerCommands::ArmRotateToZeroDeg,
+        ControllerCommands::set_delay_500ms,
+        ControllerCommands::delay,
+        ControllerCommands::arm_home,
+    }
+);
+
+const std::vector<ControllerCommands> dr_nodelet_main::ArmPickup_rack_commands(
+    {
+        ControllerCommands::Pitch_Homing,
+        ControllerCommands::Cyl_Arm_release,
+        ControllerCommands::set_delay_500ms,
+        ControllerCommands::delay,
+        ControllerCommands::recover_position,
+        ControllerCommands::ArmRotateToPickRackArrow,
+        ControllerCommands::set_delay_1s,
+        ControllerCommands::delay,
+        ControllerCommands::set_delay_1s,
+        ControllerCommands::delay,
+        ControllerCommands::WaitPickRackArrow,
+        ControllerCommands::Cyl_Arm_grab,
+        ControllerCommands::set_delay_500ms,
+        ControllerCommands::delay,
+        ControllerCommands::recover_position,
+        ControllerCommands::ArmRotateToAdjustRackArrow,
+        ControllerCommands::set_delay_1s,
+        ControllerCommands::delay,
+        ControllerCommands::Cyl_Arm_release,
+        ControllerCommands::set_delay_500ms,
+        ControllerCommands::delay,
+        ControllerCommands::Cyl_Arm_grab,
         ControllerCommands::recover_position,
         ControllerCommands::ArmRotateToZeroDeg,
         ControllerCommands::set_delay_500ms,
@@ -568,6 +615,8 @@ void dr_nodelet_main::onInit(void)
     _nh.param("pitchleftpos_1_deg", pitchleftpos_1_deg, 0.0);
     _nh.param("Arrow_Pick_Arm_deg", Arrow_Pick_Arm_deg, 0.0);
     _nh.param("Arrow_Adjust_Arm_deg", Arrow_Adjust_Arm_deg, 0.0);
+    _nh.param("Arrow_Pick_Rack_Arm_deg", Arrow_Pick_Rack_Arm_deg, 0.0);
+    _nh.param("Arrow_Adjust_Rack_Arm_deg", Arrow_Adjust_Rack_Arm_deg, 0.0);
 
     _nh.param("Pos_1_RotStart_deg", Pos_1_RotStart_deg, 0.0);
     _nh.param("Pos_2_RotStart_deg", Pos_2_RotStart_deg, 0.0);
@@ -719,6 +768,12 @@ void dr_nodelet_main::set_delay(double delay_s)
     this->_delay_s = ros::Time::now().toSec() + delay_s;
 }
 
+void dr_nodelet_main::delay_start(double delay_s)
+{
+    this->delay_time = ros::Time::now().toSec() + delay_s;
+    while(this->delay_time > ros::Time::now().toSec());
+}
+
 void dr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
 {
 
@@ -740,6 +795,8 @@ void dr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
 
     static bool _b_enable = false;
     static bool _Cyl_catch = false;
+    static bool _x_enable = false;
+    static bool _Cyl_arm = false;
 
     this->_a = joy->buttons[ButtonA];
     this->_b = joy->buttons[ButtonB];
@@ -771,9 +828,6 @@ void dr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
     {
         this->shutdown();
     }
-    if (_rb && _lb){
-        this->command_list = &ArmPickup_commands;
-    }
     if (_b && _b_enable)
     {
         if(_Cyl_catch){
@@ -794,26 +848,44 @@ void dr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
         //this->ArmVal_pub.publish(arm_vel_msg);
         //act_conf_cmd_msg.data = (uint8_t)MotorCommands::shutdown_cmd;
         //PitchRightCmd_pub.publish(act_conf_cmd_msg);
-        this->pitch_homing();
+        //this->pitch_homing();
         //this->pitch_right_pos_msg.data = -1.5;
         //this->PitchRightPos_pub.publish(this->pitch_right_pos_msg);
         //this->pitch_left_pos_msg.data = 1.5;
         //this->PitchLeftPos_pub.publish(this->pitch_left_pos_msg);
+        if(_Cyl_arm){
+            Cyl_Arm_grab_arrow();
+            _Cyl_arm = false;
+        }else{
+            Cyl_Arm_release_arrow();
+            _Cyl_arm = true;
+        }
+        _x_enable = false;
+    }else{
+        _x_enable = true;
     }
-    if(_lefttrigger){
-        this->pitch_right_pos_msg.data = pitchright_init_deg;
-        this->PitchRightPos_pub.publish(this->pitch_right_pos_msg);
-        this->pitch_left_pos_msg.data = pitchleft_init_deg;
-        this->PitchLeftPos_pub.publish(this->pitch_left_pos_msg);
-    }
+    //if(_lefttrigger){
+    //    this->pitch_right_pos_msg.data = pitchright_init_deg;
+    //    this->PitchRightPos_pub.publish(this->pitch_right_pos_msg);
+    //    this->pitch_left_pos_msg.data = pitchleft_init_deg;
+    //    this->PitchLeftPos_pub.publish(this->pitch_left_pos_msg);
+    //}
     if(!this->_command_ongoing){
 
-            //if (_y)
-            //{
-            //    this->command_list = &load_test_commands;
-            //    _command_ongoing = true;
-            //    _has_loaded = true;
-            //}
+        //if (_y)
+        //{
+        //    this->command_list = &load_test_commands;
+        //    _command_ongoing = true;
+        //    _has_loaded = true;
+        //}
+        if( (joy->buttons[ButtonRightThumb] == 1.0) && (joy->buttons[ButtonLeftThumb] == 1.0) ){
+            this->command_list = &ArmPickup_rack_commands;
+            _command_ongoing = true;
+        }
+        if (_rb && _lb){
+            this->command_list = &ArmPickup_commands;
+            _command_ongoing = true;
+        }
         if (_y&&(_padx == 1))
         {
             this->command_list = &SetLaunchPosi_commands;
@@ -1044,9 +1116,24 @@ void dr_nodelet_main::control_timer_callback(const ros::TimerEvent &event)
         this->ArmRotate_To_TargetPosi(this->Arrow_Adjust_Arm_deg);
         this->currentCommandIndex++;
     }
+    else if(currentCommand == ControllerCommands::ArmRotateToPickRackArrow)
+    {   
+        this->ArmRotate_To_TargetPosi(this->Arrow_Pick_Rack_Arm_deg);
+        this->currentCommandIndex++;
+    }
+    else if(currentCommand == ControllerCommands::ArmRotateToAdjustRackArrow)
+    {   
+        this->ArmRotate_To_TargetPosi(this->Arrow_Adjust_Rack_Arm_deg);
+        this->currentCommandIndex++;
+    }
     else if(currentCommand == ControllerCommands::ArmRotateToZeroDeg)
     {   
         this->ArmRotate_To_TargetPosi(0.0);
+        this->currentCommandIndex++;
+    }
+    else if(currentCommand == ControllerCommands::WaitPickRackArrow)
+    {
+        while(!this->_lefttrigger);
         this->currentCommandIndex++;
     }
     else if(currentCommand == ControllerCommands::launch_short_start)
