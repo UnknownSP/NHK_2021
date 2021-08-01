@@ -877,11 +877,11 @@ void dr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
     }
     if (this->_is_manual_enabled)
     {
-        double vel_x = joy->axes[AxisRightThumbX];   
-        double vel_y = joy->axes[AxisRightThumbY];
+        double vel_x = joy->axes[AxisLeftThumbX] * 2;   
+        double vel_y = joy->axes[AxisLeftThumbY] * 2;
         //double vel_yaw_l = (joy->buttons[ButtonLeftThumbX] - 1.0) * (1.0 - 0.0) / (- 1.0 - 1.0) + 0.0;
         //double vel_yaw_r = (joy->buttons[ButtonRightThumbX] - 1.0) * (- 1.0 - 0.0) / (- 1.0 - 1.0) + 0.0;
-        double vel_yaw = joy->axes[AxisLeftThumbX];//vel_yaw_l + vel_yaw_r;
+        double vel_yaw = joy->axes[AxisRightThumbX] * 1.5;//vel_yaw_l + vel_yaw_r;
         double vel_norm = hypot(vel_x, vel_y);
 
 

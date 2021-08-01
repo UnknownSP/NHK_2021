@@ -23,22 +23,22 @@
 
 <!--Motor Driver-->
     <node pkg="nodelet" type="nodelet" name="motor0" args="$(arg nodelet_mode) can_plugins/Md201xNode $(arg manager_name)" >
-      <param name="bid" type="string" value="4a0" />
+      <param name="bid" type="string" value="4a0" /> <!-- 4a0 -->
       <remap from="motor0_cmd" to="foot0_cmd"/>
       <remap from="motor0_cmd_val" to="foot0_cmd_vel"/>      
     </node>
     <node pkg="nodelet" type="nodelet" name="motor1" args="$(arg nodelet_mode) can_plugins/Md201xNode $(arg manager_name)" >
-      <param name="bid" type="string" value="60c" />
+      <param name="bid" type="string" value="60c" /> <!-- 60c -->
       <remap from="motor1_cmd" to="foot1_cmd"/>
       <remap from="motor1_cmd_val" to="foot1_cmd_vel"/>
     </node>
     <node pkg="nodelet" type="nodelet" name="motor2" args="$(arg nodelet_mode) can_plugins/Md201xNode $(arg manager_name)" >
-      <param name="bid" type="string" value="5b0" />
+      <param name="bid" type="string" value="5d0" /> <!-- 5b0 -->
       <remap from="motor2_cmd" to="foot2_cmd"/>
       <remap from="motor2_cmd_val" to="foot2_cmd_vel"/>
     </node>
     <node pkg="nodelet" type="nodelet" name="motor3" args="$(arg nodelet_mode) can_plugins/Md201xNode $(arg manager_name)" >
-      <param name="bid" type="string" value="5d4" />
+      <param name="bid" type="string" value="5d4" /> <!-- 5d4 -->
       <remap from="motor3_cmd" to="foot3_cmd"/>
       <remap from="motor3_cmd_val" to="foot3_cmd_vel"/>
     </node>
@@ -65,9 +65,9 @@
       <param name="launch_short_pos" type="double" value="0.85" />
       <param name="Pos_1_RotStart_deg" type="double" value="1.5" />
       <param name="Pos_1_RotStop_cur" type="double" value="20" />
-    	<param name="launch_medium_vel" type="double" value="-100" />
-    	<param name="launch_medium_pos" type="double" value="1.0" />
-      <param name="Pos_2_RotStart_deg" type="double" value="1.53" />
+    	<param name="launch_medium_vel" type="double" value="-50" />
+    	<param name="launch_medium_pos" type="double" value="1.2" />
+      <param name="Pos_2_RotStart_deg" type="double" value="1.52" />
       <param name="Pos_2_RotStop_cur" type="double" value="30" />
       <param name="launch_long_vel" type="double" value="-200" />
     	<param name="launch_long_pos" type="double" value="0.95" />

@@ -23,22 +23,22 @@
 
 <!--Motor Driver-->
     <node pkg="nodelet" type="nodelet" name="motor0" args="$(arg nodelet_mode) can_plugins/Md201xNode $(arg manager_name)" >
-      <param name="bid" type="string" value="400" />
+      <param name="bid" type="string" value="620" />
       <remap from="motor0_cmd" to="foot0_cmd"/>
       <remap from="motor0_cmd_val" to="foot0_cmd_vel"/>      
     </node>
     <node pkg="nodelet" type="nodelet" name="motor1" args="$(arg nodelet_mode) can_plugins/Md201xNode $(arg manager_name)" >
-      <param name="bid" type="string" value="410" />
+      <param name="bid" type="string" value="668" />
       <remap from="motor1_cmd" to="foot1_cmd"/>
       <remap from="motor1_cmd_val" to="foot1_cmd_vel"/>
     </node>
     <node pkg="nodelet" type="nodelet" name="motor2" args="$(arg nodelet_mode) can_plugins/Md201xNode $(arg manager_name)" >
-      <param name="bid" type="string" value="420" />
+      <param name="bid" type="string" value="660" />
       <remap from="motor2_cmd" to="foot2_cmd"/>
       <remap from="motor2_cmd_val" to="foot2_cmd_vel"/>
     </node>
     <node pkg="nodelet" type="nodelet" name="motor3" args="$(arg nodelet_mode) can_plugins/Md201xNode $(arg manager_name)" >
-      <param name="bid" type="string" value="430" />
+      <param name="bid" type="string" value="62c" />
       <remap from="motor3_cmd" to="foot3_cmd"/>
       <remap from="motor3_cmd_val" to="foot3_cmd_vel"/>
     </node>
@@ -69,6 +69,23 @@
       <remap from="motor8_cmd" to="Pick_R_Hand_cmd"/>
       <remap from="motor8_cmd_val" to="Pick_R_Hand_cmd_pos"/>
     </node>
+
+    <node pkg="nodelet" type="nodelet" name="motor9" args="$(arg nodelet_mode) can_plugins/Md201xNode $(arg manager_name)" >
+      <param name="bid" type="string" value="700" />
+      <remap from="motor9_cmd" to="Pick_L_Base_cmd"/>
+      <remap from="motor9_cmd_val" to="Pick_L_Base_cmd_pos"/>
+    </node>
+    <node pkg="nodelet" type="nodelet" name="motor10" args="$(arg nodelet_mode) can_plugins/Md201xNode $(arg manager_name)" >
+      <param name="bid" type="string" value="710" />
+      <remap from="motor10_cmd" to="Pick_L_Height_cmd"/>
+      <remap from="motor10_cmd_val" to="Pick_L_Height_cmd_pos"/>
+    </node>
+    
+    <node pkg="nodelet" type="nodelet" name="motor11" args="$(arg nodelet_mode) can_plugins/Md201xNode $(arg manager_name)" >
+      <param name="bid" type="string" value="720" />
+      <remap from="motor11_cmd" to="Pick_L_Hand_cmd"/>
+      <remap from="motor11_cmd_val" to="Pick_L_Hand_cmd_pos"/>
+    </node>
     
     <node pkg="nodelet" type="nodelet" name="tr_nodelet_main" args="$(arg nodelet_mode) tr/tr_nodelet_main $(arg manager_name)" >
       <param name="R_base_pick_standby" type="double" value="2.55" />
@@ -77,8 +94,16 @@
       <param name="R_height_pick" type="double" value="22.5" />
       <param name="R_height_load" type="double" value="17" />
       <param name="R_height_load_standby" type="double" value="38" /> 
-      <param name="R_hand_pick" type="double" value="-4.65" />
-      <param name="R_hand_load" type="double" value="-1.5" />
+      <param name="R_hand_pick" type="double" value="-3.15" />
+      <param name="R_hand_load" type="double" value="0.0" />
+      <param name="L_base_pick_standby" type="double" value="-2.55" />
+      <param name="L_base_pick" type="double" value="-3.35" />
+      <param name="L_base_load" type="double" value="0.0" /> 
+      <param name="L_height_pick" type="double" value="22.5" />
+      <param name="L_height_load" type="double" value="17" />
+      <param name="L_height_load_standby" type="double" value="38" /> 
+      <param name="L_hand_pick" type="double" value="3.15" />
+      <param name="L_hand_load" type="double" value="0.0" />
       <param name="shot_power_shooter_init" type="double" value="-32.8" /> 
       <param name="shot_power_load" type="double" value="-10" />
       <param name="shot_power_launch_pos_1" type="double" value="-19.5" /> <!-- weak -->
