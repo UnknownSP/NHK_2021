@@ -175,7 +175,7 @@ namespace base_controller_plugins{
   	t[2] = -((targetVelX * sin(5 * M_PI / 4))	+ (targetVelY * cos(5 * M_PI / 4)) 	+ (targetRotZ * RobotRadius)) / wheel_radius;
     t[3] = -((targetVelX * sin(7 * M_PI / 4))	+ (targetVelY * cos(7 * M_PI / 4)) 	+ (targetRotZ * RobotRadius)) / wheel_radius;
   
-  	double _k = 12.0;
+  	double _k = 10.0;
   
   	if(this->LimitVelocity){
   		for(int i = 0; i < 4; i++){

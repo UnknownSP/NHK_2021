@@ -33,7 +33,7 @@
       <remap from="motor1_cmd_val" to="foot1_cmd_vel"/>
     </node>
     <node pkg="nodelet" type="nodelet" name="motor2" args="$(arg nodelet_mode) can_plugins/Md201xNode $(arg manager_name)" >
-      <param name="bid" type="string" value="5d0" /> <!-- 5b0 -->
+      <param name="bid" type="string" value="5b0" /> <!-- 5b0 -->
       <remap from="motor2_cmd" to="foot2_cmd"/>
       <remap from="motor2_cmd_val" to="foot2_cmd_vel"/>
     </node>
@@ -43,19 +43,19 @@
       <remap from="motor3_cmd_val" to="foot3_cmd_vel"/>
     </node>
     <node pkg="nodelet" type="nodelet" name="motor4" args="$(arg nodelet_mode) can_plugins/Md201xNode $(arg manager_name)" >
-      <param name="bid" type="string" value="4c4" />
+      <param name="bid" type="string" value="4c0" />
       <remap from="motor4_cmd" to="arm_cmd"/>
-      <remap from="motor4_cmd_val" to="arm_val"/>+
+      <remap from="motor4_cmd_val" to="arm_val"/>
     </node>
     <node pkg="nodelet" type="nodelet" name="motor5" args="$(arg nodelet_mode) can_plugins/Md201xNode $(arg manager_name)" >
       <param name="bid" type="string" value="610"/>
       <remap from="motor5_cmd" to="pitch_right_cmd"/>
-      <remap from="motor5_cmd_val" to="pitch_right_cmd_pos"/>+
+      <remap from="motor5_cmd_val" to="pitch_right_cmd_pos"/>
     </node>
     <node pkg="nodelet" type="nodelet" name="motor6" args="$(arg nodelet_mode) can_plugins/Md201xNode $(arg manager_name)" >
       <param name="bid" type="string" value="620" />
       <remap from="motor6_cmd" to="pitch_left_cmd"/>
-      <remap from="motor6_cmd_val" to="pitch_left_cmd_pos"/>+
+      <remap from="motor6_cmd_val" to="pitch_left_cmd_pos"/>
     </node>
     
     
@@ -66,15 +66,15 @@
       <param name="Pos_1_RotStart_deg" type="double" value="1.5" />
       <param name="Pos_1_RotStop_cur" type="double" value="20" />
 
-    	<param name="launch_medium_vel" type="double" value="-50" />
+    	<param name="launch_medium_vel" type="double" value="-60" />
     	<param name="launch_medium_pos" type="double" value="1.2" />
       <param name="Pos_2_RotStart_deg" type="double" value="1.52" />
-      <param name="Pos_2_RotStop_cur" type="double" value="30" />
+      <param name="Pos_2_RotStop_cur" type="double" value="40" />
 
       <param name="launch_long_vel" type="double" value="-200" />
-    	<param name="launch_long_pos" type="double" value="1.2" />
+    	<param name="launch_long_pos" type="double" value="0.8" />
       <param name="Pos_3_RotStart_deg" type="double" value="1.6" />
-      <param name="Pos_3_RotStop_cur" type="double" value="40" />
+      <param name="Pos_3_RotStop_cur" type="double" value="70" />
 
       <param name="pitchright_init_deg" type="double" value="-1.0" />
       <param name="pitchleft_init_deg" type="double" value="1.0" />
@@ -83,14 +83,14 @@
       <param name="pitchrightpos_1_deg" type="double" value="-2.05" />
       <param name="pitchleftpos_1_deg" type="double" value="2.15" />
       <param name="pitchrightpos_2_deg" type="double" value="-2.05" />
-      <param name="pitchleftpos_2_deg" type="double" value="2.15" />
-      <param name="pitchrightpos_3_deg" type="double" value="-1.65" />
-      <param name="pitchleftpos_3_deg" type="double" value="1.75" />
+      <param name="pitchleftpos_2_deg" type="double" value="2.13" />
+      <param name="pitchrightpos_3_deg" type="double" value="-1.95" />
+      <param name="pitchleftpos_3_deg" type="double" value="2.05" />
 
       <param name="Arrow_Pick_Arm_deg" type="double" value="2.2" />
       <param name="Arrow_Adjust_Arm_deg" type="double" value="1.1" />
-      <param name="Arrow_Pick_Rack_Arm_deg" type="double" value="-1.0" />
-      <param name="Arrow_Adjust_Rack_Arm_deg" type="double" value="0.9" />
+      <param name="Arrow_Pick_Rack_Arm_deg" type="double" value="-2.2" />
+      <param name="Arrow_Adjust_Rack_Arm_deg" type="double" value="1.1" />
     	<!-- <param name="launch_short_vel" type="double" value="14.75" /> -->
     	<!-- <param name="launch_short_pos" type="double" value="7.7" /> -->
       <!-- 2m80 iikanzi

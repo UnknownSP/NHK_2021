@@ -71,7 +71,7 @@
     </node>
 
     <node pkg="nodelet" type="nodelet" name="motor9" args="$(arg nodelet_mode) can_plugins/Md201xNode $(arg manager_name)" >
-      <param name="bid" type="string" value="700" />
+      <param name="bid" type="string" value="640" />
       <remap from="motor9_cmd" to="Pick_L_Base_cmd"/>
       <remap from="motor9_cmd_val" to="Pick_L_Base_cmd_pos"/>
     </node>
@@ -82,7 +82,7 @@
     </node>
     
     <node pkg="nodelet" type="nodelet" name="motor11" args="$(arg nodelet_mode) can_plugins/Md201xNode $(arg manager_name)" >
-      <param name="bid" type="string" value="720" />
+      <param name="bid" type="string" value="548" />
       <remap from="motor11_cmd" to="Pick_L_Hand_cmd"/>
       <remap from="motor11_cmd_val" to="Pick_L_Hand_cmd_pos"/>
     </node>
@@ -102,7 +102,7 @@
       <param name="L_height_pick" type="double" value="22.5" />
       <param name="L_height_load" type="double" value="17" />
       <param name="L_height_load_standby" type="double" value="38" /> 
-      <param name="L_hand_pick" type="double" value="3.15" />
+      <param name="L_hand_pick" type="double" value="3.0" />
       <param name="L_hand_load" type="double" value="0.0" />
       <param name="shot_power_shooter_init" type="double" value="-32.5" /> 
       <param name="shot_power_load" type="double" value="-10" />

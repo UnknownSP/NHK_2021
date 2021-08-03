@@ -198,7 +198,7 @@ private:
 	/**********************/
     ros::Timer control_timer;
 
-    double _delay_s = 0;
+    int _delay_s = 0;
 
     double launch_long_vel;
     double launch_medium_vel;
@@ -494,6 +494,11 @@ const std::vector<ControllerCommands> dr_nodelet_main::ArmPickup_commands(
         ControllerCommands::set_delay_500ms,
         ControllerCommands::delay,
         ControllerCommands::arm_home,
+        ControllerCommands::set_delay_1s,
+        ControllerCommands::delay,
+        ControllerCommands::set_delay_1s,
+        ControllerCommands::delay,
+        ControllerCommands::arm_home,
     }
 );
 
@@ -509,7 +514,7 @@ const std::vector<ControllerCommands> dr_nodelet_main::ArmPickup_rack_commands(
         ControllerCommands::delay,
         ControllerCommands::set_delay_1s,
         ControllerCommands::delay,
-        ControllerCommands::WaitPickRackArrow,
+        //ControllerCommands::WaitPickRackArrow,
         ControllerCommands::Cyl_Arm_grab,
         ControllerCommands::set_delay_500ms,
         ControllerCommands::delay,
@@ -949,11 +954,11 @@ void dr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
     }
     if (this->_is_manual_enabled)
     {
-        double vel_x = joy->axes[AxisLeftThumbX] * 2;   
-        double vel_y = joy->axes[AxisLeftThumbY] * 2;
+        double vel_x = joy->axes[AxisLeftThumbX];   
+        double vel_y = joy->axes[AxisLeftThumbY];
         //double vel_yaw_l = (joy->buttons[ButtonLeftThumbX] - 1.0) * (1.0 - 0.0) / (- 1.0 - 1.0) + 0.0;
         //double vel_yaw_r = (joy->buttons[ButtonRightThumbX] - 1.0) * (- 1.0 - 0.0) / (- 1.0 - 1.0) + 0.0;
-        double vel_yaw = joy->axes[AxisRightThumbX] * 1.5;//vel_yaw_l + vel_yaw_r;
+        double vel_yaw = joy->axes[AxisRightThumbX];//vel_yaw_l + vel_yaw_r;
         double vel_norm = hypot(vel_x, vel_y);
 
 
