@@ -700,6 +700,8 @@ const std::vector<ControllerCommands> tr_nodelet_main::Shot_and_SetLoadPos_comma
         ControllerCommands::delay,
         ControllerCommands::set_delay_1s,
         ControllerCommands::delay,
+        ControllerCommands::set_delay_1s,
+        ControllerCommands::delay,
         ControllerCommands::r_hand_homing,
         ControllerCommands::l_hand_homing,
         ControllerCommands::set_delay_1s,

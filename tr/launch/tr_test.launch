@@ -23,7 +23,7 @@
 
 <!--Motor Driver-->
     <node pkg="nodelet" type="nodelet" name="motor0" args="$(arg nodelet_mode) can_plugins/Md201xNode $(arg manager_name)" >
-      <param name="bid" type="string" value="620" />
+      <param name="bid" type="string" value="63c" />
       <remap from="motor0_cmd" to="foot0_cmd"/>
       <remap from="motor0_cmd_val" to="foot0_cmd_vel"/>      
     </node>
@@ -33,7 +33,7 @@
       <remap from="motor1_cmd_val" to="foot1_cmd_vel"/>
     </node>
     <node pkg="nodelet" type="nodelet" name="motor2" args="$(arg nodelet_mode) can_plugins/Md201xNode $(arg manager_name)" >
-      <param name="bid" type="string" value="660" />
+      <param name="bid" type="string" value="640" />
       <remap from="motor2_cmd" to="foot2_cmd"/>
       <remap from="motor2_cmd_val" to="foot2_cmd_vel"/>
     </node>
@@ -54,7 +54,7 @@
     </node>
     
     <node pkg="nodelet" type="nodelet" name="motor6" args="$(arg nodelet_mode) can_plugins/Md201xNode $(arg manager_name)" >
-      <param name="bid" type="string" value="52c" />
+      <param name="bid" type="string" value="620" />
       <remap from="motor6_cmd" to="Pick_R_Base_cmd"/>
       <remap from="motor6_cmd_val" to="Pick_R_Base_cmd_pos"/>
     </node>
@@ -71,12 +71,12 @@
     </node>
 
     <node pkg="nodelet" type="nodelet" name="motor9" args="$(arg nodelet_mode) can_plugins/Md201xNode $(arg manager_name)" >
-      <param name="bid" type="string" value="640" />
+      <param name="bid" type="string" value="52c" /> <!--640-->
       <remap from="motor9_cmd" to="Pick_L_Base_cmd"/>
       <remap from="motor9_cmd_val" to="Pick_L_Base_cmd_pos"/>
     </node>
     <node pkg="nodelet" type="nodelet" name="motor10" args="$(arg nodelet_mode) can_plugins/Md201xNode $(arg manager_name)" >
-      <param name="bid" type="string" value="710" />
+      <param name="bid" type="string" value="660" />
       <remap from="motor10_cmd" to="Pick_L_Height_cmd"/>
       <remap from="motor10_cmd_val" to="Pick_L_Height_cmd_pos"/>
     </node>
@@ -96,12 +96,12 @@
       <param name="R_height_load_standby" type="double" value="38" /> 
       <param name="R_hand_pick" type="double" value="-3.05" />
       <param name="R_hand_load" type="double" value="0.0" />
-      <param name="L_base_pick_standby" type="double" value="-2.55" />
-      <param name="L_base_pick" type="double" value="-3.35" />
-      <param name="L_base_load" type="double" value="0.0" /> 
-      <param name="L_height_pick" type="double" value="22.5" />
-      <param name="L_height_load" type="double" value="17" />
-      <param name="L_height_load_standby" type="double" value="38" /> 
+      <param name="L_base_pick_standby" type="double" value="-3.55" />
+      <param name="L_base_pick" type="double" value="-4.35" />
+      <param name="L_base_load" type="double" value="-1.0" />
+      <param name="L_height_pick" type="double" value="-14.5" />
+      <param name="L_height_load" type="double" value="-11.3" />
+      <param name="L_height_load_standby" type="double" value="-15.3" /> 
       <param name="L_hand_pick" type="double" value="3.0" />
       <param name="L_hand_load" type="double" value="0.0" />
       <param name="shot_power_shooter_init" type="double" value="-32.5" /> 
@@ -131,7 +131,7 @@
     </node>
     
      <node pkg="nodelet" type="nodelet" name="base_controller" args="$(arg nodelet_mode) base_controller_plugins/Omni4 $(arg manager_name)" >
-      <param name="motor_max_acc" value="124000.0" />
+      <param name="motor_max_acc" value="5000.0" />
       <param name="motor_max_vel" value="400.0" />
       <param name="invert_x" value="false" />
       <param name="invert_y" value="false" />

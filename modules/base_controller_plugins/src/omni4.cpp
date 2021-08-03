@@ -175,14 +175,14 @@ namespace base_controller_plugins{
   	t[2] = -((targetVelX * sin(5 * M_PI / 4))	+ (targetVelY * cos(5 * M_PI / 4)) 	+ (targetRotZ * RobotRadius)) / wheel_radius;
     t[3] = -((targetVelX * sin(7 * M_PI / 4))	+ (targetVelY * cos(7 * M_PI / 4)) 	+ (targetRotZ * RobotRadius)) / wheel_radius;
   
-  	double _k = 10.0;
+  	double _k = 30.0;
   
   	if(this->LimitVelocity){
   		for(int i = 0; i < 4; i++){
   			auto _a = fabs(t[i]);
   			if(_a * _k > this->MaximumVelocity){
   				_k = this->MaximumVelocity / _a;
-                  NODELET_WARN("An infeasible velocity command detected! You might want to look into it.");
+                NODELET_WARN("An infeasible velocity command detected! You might want to look into it.");
   			}
   		}
   
@@ -209,8 +209,19 @@ namespace base_controller_plugins{
   		}
   	}
   
+	//double limit = 500.0;
   	for(int i = 0; i < 4; i++){
+		//if(i != 2){
+		//	t[i] *= 1.2;
+		//}	  
   		this->lastTarget[i] = t[i];
+		//if(fabs(t[i]) >= limit){
+		//	if(t[i] > 0.0){
+		//		t[i] = limit;
+		//	}else{
+		//		t[i] = -limit;
+		//	}
+		//}
   		this->motorCmdVelmsg[i].data = t[i];
   	}
   }
