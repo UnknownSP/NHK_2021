@@ -54,7 +54,7 @@
     </node>
     
     <node pkg="nodelet" type="nodelet" name="motor6" args="$(arg nodelet_mode) can_plugins/Md201xNode $(arg manager_name)" >
-      <param name="bid" type="string" value="620" />
+      <param name="bid" type="string" value="52c" />
       <remap from="motor6_cmd" to="Pick_R_Base_cmd"/>
       <remap from="motor6_cmd_val" to="Pick_R_Base_cmd_pos"/>
     </node>
@@ -71,12 +71,12 @@
     </node>
 
     <node pkg="nodelet" type="nodelet" name="motor9" args="$(arg nodelet_mode) can_plugins/Md201xNode $(arg manager_name)" >
-      <param name="bid" type="string" value="52c" /> <!--640-->
+      <param name="bid" type="string" value="620" /> <!--640-->
       <remap from="motor9_cmd" to="Pick_L_Base_cmd"/>
       <remap from="motor9_cmd_val" to="Pick_L_Base_cmd_pos"/>
     </node>
     <node pkg="nodelet" type="nodelet" name="motor10" args="$(arg nodelet_mode) can_plugins/Md201xNode $(arg manager_name)" >
-      <param name="bid" type="string" value="660" />
+      <param name="bid" type="string" value="610" />
       <remap from="motor10_cmd" to="Pick_L_Height_cmd"/>
       <remap from="motor10_cmd_val" to="Pick_L_Height_cmd_pos"/>
     </node>
@@ -96,13 +96,13 @@
       <param name="R_height_load_standby" type="double" value="38" /> 
       <param name="R_hand_pick" type="double" value="-3.05" />
       <param name="R_hand_load" type="double" value="0.0" />
-      <param name="L_base_pick_standby" type="double" value="-3.55" />
-      <param name="L_base_pick" type="double" value="-4.35" />
-      <param name="L_base_load" type="double" value="-1.0" />
-      <param name="L_height_pick" type="double" value="-14.5" />
-      <param name="L_height_load" type="double" value="-11.3" />
-      <param name="L_height_load_standby" type="double" value="-15.3" /> 
-      <param name="L_hand_pick" type="double" value="3.0" />
+      <param name="L_base_pick_standby" type="double" value="-2.55" />
+      <param name="L_base_pick" type="double" value="-3.35" />
+      <param name="L_base_load" type="double" value="-0.0" />
+      <param name="L_height_pick" type="double" value="-22.5" />
+      <param name="L_height_load" type="double" value="-17" />
+      <param name="L_height_load_standby" type="double" value="-38" /> 
+      <param name="L_hand_pick" type="double" value="3.1" />
       <param name="L_hand_load" type="double" value="0.0" />
       <param name="shot_power_shooter_init" type="double" value="-32.5" /> 
       <param name="shot_power_load" type="double" value="-10" />
@@ -113,7 +113,7 @@
       <param name="shot_angle_launch_pos_1" type="double" value="220" /> <!-- weak -->
       <param name="shot_angle_launch_pos_2" type="double" value="220" /> <!--  | -->
       <param name="shot_angle_launch_pos_3" type="double" value="235" />  <!--  | -->
-      <param name="shot_angle_launch_pos_4" type="double" value="250.0" /> <!-- powerful -->
+      <param name="shot_angle_launch_pos_4" type="double" value="260.0" /> <!-- powerful -->
     </node>
 
 <!--Solenoid_Driver-->  
