@@ -132,7 +132,7 @@
     
      <node pkg="nodelet" type="nodelet" name="base_controller" args="$(arg nodelet_mode) base_controller_plugins/Omni4 $(arg manager_name)" >
       <param name="motor_max_acc" value="5000.0" />
-      <param name="motor_max_vel" value="400.0" />
+      <param name="motor_max_vel" value="1000.0" />
       <param name="invert_x" value="false" />
       <param name="invert_y" value="false" />
       <param name="invert_z" value="false" />

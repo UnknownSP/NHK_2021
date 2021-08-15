@@ -53,6 +53,7 @@ enum class ControllerCommands : uint16_t
     ArmRotateToZeroDeg,
     ArmRotateToPickRackArrow,
     ArmRotateToAdjustRackArrow,
+    ArmRotateToAdjustRackArrow_high,
 
     WaitPickRackArrow,
 
@@ -230,6 +231,7 @@ private:
     double Arrow_Adjust_Arm_deg;
     double Arrow_Pick_Rack_Arm_deg;
     double Arrow_Adjust_Rack_Arm_deg;
+    double Arrow_Adjust_Hight_Rack_Arm_deg;
 
 	double throw_position_observed = 0;
 
@@ -495,16 +497,16 @@ const std::vector<ControllerCommands> dr_nodelet_main::ArmPickup_commands(
         ControllerCommands::delay,
         ControllerCommands::Cyl_Arm_grab,
         ControllerCommands::Cyl_Lift_down,
-        ControllerCommands::recover_position,
-        ControllerCommands::ArmRotateToZeroDeg,
-        ControllerCommands::set_delay_500ms,
-        ControllerCommands::delay,
-        ControllerCommands::arm_home,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::arm_home,
+        //ControllerCommands::recover_position,
+        //ControllerCommands::ArmRotateToZeroDeg,
+        //ControllerCommands::set_delay_500ms,
+        //ControllerCommands::delay,
+        //ControllerCommands::arm_home,
+        //ControllerCommands::set_delay_1s,
+        //ControllerCommands::delay,
+        //ControllerCommands::set_delay_1s,
+        //ControllerCommands::delay,
+        //ControllerCommands::arm_home,
     }
 );
 
@@ -518,30 +520,32 @@ const std::vector<ControllerCommands> dr_nodelet_main::ArmPickup_rack_commands(
         ControllerCommands::ArmRotateToPickRackArrow,
         ControllerCommands::set_delay_1s,
         ControllerCommands::delay,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
         ControllerCommands::WaitPickRackArrow,
-        //ControllerCommands::Cyl_Arm_grab,
+        ControllerCommands::Cyl_Arm_grab,
         //ControllerCommands::set_delay_500ms,
         //ControllerCommands::delay,
         //ControllerCommands::recover_position,
-        //ControllerCommands::ArmRotateToAdjustRackArrow,
-        //ControllerCommands::set_delay_1s,
-        //ControllerCommands::delay,
-        //ControllerCommands::Cyl_Arm_release,
-        //ControllerCommands::set_delay_500ms,
-        //ControllerCommands::delay,
-        //ControllerCommands::Cyl_Arm_grab,
-        ControllerCommands::recover_position,
-        ControllerCommands::ArmRotateToZeroDeg,
+        //ControllerCommands::ArmRotateToAdjustRackArrow_high,
+        ControllerCommands::WaitPickRackArrow,
+        ControllerCommands::ArmRotateToAdjustRackArrow,
+        ControllerCommands::set_delay_1s,
+        ControllerCommands::delay,
         ControllerCommands::set_delay_500ms,
         ControllerCommands::delay,
-        ControllerCommands::arm_home,
-        ControllerCommands::set_delay_1s,
+        ControllerCommands::Cyl_Arm_release,
+        ControllerCommands::set_delay_500ms,
         ControllerCommands::delay,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::arm_home,
+        ControllerCommands::Cyl_Arm_grab,
+        //ControllerCommands::recover_position,
+        //ControllerCommands::ArmRotateToZeroDeg,
+        //ControllerCommands::set_delay_500ms,
+        //ControllerCommands::delay,
+        //ControllerCommands::arm_home,
+        //ControllerCommands::set_delay_1s,
+        //ControllerCommands::delay,
+        //ControllerCommands::set_delay_1s,
+        //ControllerCommands::delay,
+        //ControllerCommands::arm_home,
     }
 );
 
@@ -633,6 +637,7 @@ void dr_nodelet_main::onInit(void)
     _nh.param("Arrow_Adjust_Arm_deg", Arrow_Adjust_Arm_deg, 0.0);
     _nh.param("Arrow_Pick_Rack_Arm_deg", Arrow_Pick_Rack_Arm_deg, 0.0);
     _nh.param("Arrow_Adjust_Rack_Arm_deg", Arrow_Adjust_Rack_Arm_deg, 0.0);
+    _nh.param("Arrow_Adjust_Hight_Rack_Arm_deg", Arrow_Adjust_Hight_Rack_Arm_deg, 0.0);
 
     _nh.param("Pos_1_RotStart_deg", Pos_1_RotStart_deg, 0.0);
     _nh.param("Pos_2_RotStart_deg", Pos_2_RotStart_deg, 0.0);
@@ -955,7 +960,7 @@ void dr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
             //    ArmRotate_To_TargetPosi(this->last_arm_deg + this->adjust_arm_deg); 
             //}
         }
-        if (_a&&(_padx == 1))
+        if (_a&&(_padx == 1) && _has_loaded)
         {     
             this->last_arm_deg = 0.0;
             this->adjust_arm_deg = 0.0;
@@ -963,7 +968,7 @@ void dr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
             _command_ongoing = true;
             _has_loaded = false;
         }
-        else if (_a&&(_pady == 1))
+        else if (_a&&(_pady == 1) && _has_loaded)
         {      
             this->last_arm_deg = 0.0;
             this->adjust_arm_deg = 0.0;
@@ -971,7 +976,7 @@ void dr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
             _command_ongoing = true;
             _has_loaded = false;
         }
-        else if (_a&&(_pady == -1))
+        else if (_a&&(_pady == -1) && _has_loaded)
         {      
             this->last_arm_deg = 0.0;
             this->adjust_arm_deg = 0.0;
@@ -993,11 +998,11 @@ void dr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
     }
     if (this->_is_manual_enabled)
     {
-        double vel_x = joy->axes[AxisLeftThumbX] * 1.5;   
-        double vel_y = joy->axes[AxisLeftThumbY] * 1.5;
+        double vel_x = joy->axes[AxisLeftThumbX];   
+        double vel_y = joy->axes[AxisLeftThumbY];
         //double vel_yaw_l = (joy->buttons[ButtonLeftThumbX] - 1.0) * (1.0 - 0.0) / (- 1.0 - 1.0) + 0.0;
         //double vel_yaw_r = (joy->buttons[ButtonRightThumbX] - 1.0) * (- 1.0 - 0.0) / (- 1.0 - 1.0) + 0.0;
-        double vel_yaw = joy->axes[AxisRightThumbX] * 1;//vel_yaw_l + vel_yaw_r;
+        double vel_yaw = joy->axes[AxisRightThumbX];//vel_yaw_l + vel_yaw_r;
         double vel_norm = hypot(vel_x, vel_y);
 
 
@@ -1006,9 +1011,19 @@ void dr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
             vel_x /= vel_norm;
             vel_y /= vel_norm;
         }
-        this->cmd_vel_msg.linear.x = vel_x;
-        this->cmd_vel_msg.linear.y = vel_y;
-        this->cmd_vel_msg.angular.z = -vel_yaw;
+        if(joy->buttons[ButtonLeftThumb] >= 1.0){
+            this->cmd_vel_msg.linear.x = -vel_x * 0.5;
+            this->cmd_vel_msg.linear.y = -vel_y * 0.5;
+            this->cmd_vel_msg.angular.z = -vel_yaw * 0.5;
+        }else if(joy->buttons[ButtonRightThumb] >= 1.0){
+            this->cmd_vel_msg.linear.x = -vel_x * 5;
+            this->cmd_vel_msg.linear.y = -vel_y * 5;
+            this->cmd_vel_msg.angular.z = -vel_yaw * 2.5;
+        }else{
+            this->cmd_vel_msg.linear.x = -vel_x;
+            this->cmd_vel_msg.linear.y = -vel_y;
+            this->cmd_vel_msg.angular.z = -vel_yaw;
+        }
         this->cmd_vel_pub.publish(this->cmd_vel_msg);
     }
     last_start = _start;
@@ -1171,6 +1186,11 @@ void dr_nodelet_main::control_timer_callback(const ros::TimerEvent &event)
     else if(currentCommand == ControllerCommands::ArmRotateToAdjustRackArrow)
     {   
         this->ArmRotate_To_TargetPosi(this->Arrow_Adjust_Rack_Arm_deg);
+        this->currentCommandIndex++;
+    }
+    else if(currentCommand == ControllerCommands::ArmRotateToAdjustRackArrow_high)
+    {   
+        this->ArmRotate_To_TargetPosi(this->Arrow_Adjust_Hight_Rack_Arm_deg);
         this->currentCommandIndex++;
     }
     else if(currentCommand == ControllerCommands::ArmRotateToZeroDeg)

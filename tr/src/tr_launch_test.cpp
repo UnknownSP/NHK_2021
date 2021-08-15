@@ -1352,9 +1352,19 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
         //        NODELET_INFO("homing");
         //}
 
-        this->cmd_vel_msg.linear.x = -vel_x;
-        this->cmd_vel_msg.linear.y = -vel_y;
-        this->cmd_vel_msg.angular.z = -vel_yaw;
+        if(joy->buttons[ButtonLeftThumb] >= 1.0){
+            this->cmd_vel_msg.linear.x = -vel_x * 0.5;
+            this->cmd_vel_msg.linear.y = -vel_y * 0.5;
+            this->cmd_vel_msg.angular.z = -vel_yaw * 0.5;
+        }else if(joy->buttons[ButtonRightThumb] >= 1.0){
+            this->cmd_vel_msg.linear.x = -vel_x * 5;
+            this->cmd_vel_msg.linear.y = -vel_y * 5;
+            this->cmd_vel_msg.angular.z = -vel_yaw * 2.5;
+        }else{
+            this->cmd_vel_msg.linear.x = -vel_x;
+            this->cmd_vel_msg.linear.y = -vel_y;
+            this->cmd_vel_msg.angular.z = -vel_yaw;
+        }
         this->cmd_vel_pub.publish(this->cmd_vel_msg);
     }
     last_a = _a;
