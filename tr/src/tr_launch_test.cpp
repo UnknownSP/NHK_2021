@@ -30,8 +30,6 @@ enum class ControllerCommands : uint16_t
     adjust_arm_to_grab,
     adjust_arm_to_set,
     grab_arrow,
-    arm_rotate_to_PI,
-    arm_rotate_to_0,
     release_arrow,
     table_move_to_launcher,
     table_move_to_base,
@@ -62,12 +60,6 @@ enum class ControllerCommands : uint16_t
     shooter_init,
     shooter_move_load,
     angle_init,
-    r_hand_shutdown,
-    r_hand_recover,
-    r_hand_homing,
-    l_hand_shutdown,
-    l_hand_recover,
-    l_hand_homing,
 
     riseflag_shooter_pos_load,
     //-------------------------------------------
@@ -86,10 +78,13 @@ enum class SolenoidValveCommands : uint8_t
     shutdown_cmd      = 0b000000,
     recover_cmd         = 0b000001,
     
-    shooter_cmd         = 0b000010,//default close
-    R_hand_cmd     = 0b010000,//default open
+    shooter_cmd    = 0b0000010,//default close
+    R_hand_cmd     = 0b0010000,//default open
     L_hand_cmd     = 0b1000000,//default open
-    move_base_cmd     = 0b100000,//default right
+    move_base_cmd  = 0b0100000,//default right
+    
+    R_hand_roll_cmd= 0b0000001,//default open
+    L_hand_roll_cmd= 0b0000100,//default open
     
 };
 
@@ -163,10 +158,6 @@ class tr_nodelet_main : public nodelet::Nodelet
     ros::Publisher Pick_R_Height_Pos_pub;
     std_msgs::Float64 Pick_R_height_pos_msg;
 
-    ros::Publisher Pick_R_Hand_Cmd_pub;
-  	ros::Publisher Pick_R_Hand_Pos_pub;
-    std_msgs::Float64 Pick_R_hand_pos_msg;
-
     ros::Publisher Pick_L_Base_Cmd_pub;
   	ros::Publisher Pick_L_Base_Pos_pub;
     std_msgs::Float64 Pick_L_base_pos_msg;
@@ -175,14 +166,15 @@ class tr_nodelet_main : public nodelet::Nodelet
     ros::Publisher Pick_L_Height_Pos_pub;
     std_msgs::Float64 Pick_L_height_pos_msg;
 
-    ros::Publisher Pick_L_Hand_Cmd_pub;
-  	ros::Publisher Pick_L_Hand_Pos_pub;
-    std_msgs::Float64 Pick_L_hand_pos_msg;
+    ros::Publisher Solenoid1_Cmd_pub;
+    ros::Publisher Solenoid1_Order_pub;
+    std_msgs::UInt8 solenoid1_order_msg;
+    uint8_t lastSolenoid_1_Order = 0b0000000;
 
-    ros::Publisher SolenoidCmd_pub;
-    ros::Publisher SolenoidOrder_pub;
-    std_msgs::UInt8 solenoid_order_msg;
-    uint8_t lastSolenoidOrder = 0b0000000;
+    ros::Publisher Solenoid2_Cmd_pub;
+    ros::Publisher Solenoid2_Order_pub;
+    std_msgs::UInt8 solenoid2_order_msg;
+    uint8_t lastSolenoid_2_Order = 0b0000000;
 
     ros::Publisher act_enable_pub0;
     ros::Publisher act_enable_pub1;
@@ -210,7 +202,6 @@ class tr_nodelet_main : public nodelet::Nodelet
     void table_move_to_launcher();
     void table_move_to_base();
     void launch_ready();
-    void arm_rotate(float rotateangle);
     void adjust_arm(float movelength);
     void adjust_arm_to_grab();
     void adjust_arm_to_lift();
@@ -240,10 +231,8 @@ class tr_nodelet_main : public nodelet::Nodelet
     void Shot_Angle_Homing();
     void Pick_R_Base_Homing();
     void Pick_R_Height_Homing();
-    void Pick_R_Hand_Homing();
     void Pick_L_Base_Homing();
     void Pick_L_Height_Homing();
-    void Pick_L_Hand_Homing();
 
     void R_base_move_pick_standby_arrow();
     void R_base_move_pick_arrow();
@@ -252,10 +241,6 @@ class tr_nodelet_main : public nodelet::Nodelet
     void R_height_move_load_standby_arrow();
     void R_height_move_load_arrow();
     void R_height_move_target(double target);
-    void R_hand_move_pick_arrow();
-    void R_hand_move_load_arrow();
-    void R_hand_shutdown();
-    void R_hand_recover();
     void L_base_move_pick_standby_arrow();
     void L_base_move_pick_arrow();
     void L_base_move_load_arrow();
@@ -263,10 +248,6 @@ class tr_nodelet_main : public nodelet::Nodelet
     void L_height_move_load_standby_arrow();
     void L_height_move_load_arrow();
     void L_height_move_target(double target);
-    void L_hand_move_pick_arrow();
-    void L_hand_move_load_arrow();
-    void L_hand_shutdown();
-    void L_hand_recover();
 
     void Shot_Power_move_shooterinit();
     void Shot_Power_move_target(double target);
@@ -277,8 +258,12 @@ class tr_nodelet_main : public nodelet::Nodelet
     void Cyl_base_load();
     void Cyl_R_hand_grab();
     void Cyl_R_hand_release();
+    void Cyl_R_hand_roll_pick();
+    void Cyl_R_hand_roll_load();
     void Cyl_L_hand_grab();
     void Cyl_L_hand_release();
+    void Cyl_L_hand_roll_pick();
+    void Cyl_L_hand_roll_load();
     void Cyl_shooter_grab();
     void Cyl_shooter_release();
     //----------------------------------------
@@ -288,8 +273,6 @@ class tr_nodelet_main : public nodelet::Nodelet
     double R_height_pick;
     double R_height_load_standby;
     double R_height_load;
-    double R_hand_pick;
-    double R_hand_load;
 
     double L_base_pick_standby;
     double L_base_pick;
@@ -297,8 +280,6 @@ class tr_nodelet_main : public nodelet::Nodelet
     double L_height_pick;
     double L_height_load_standby;
     double L_height_load;
-    double L_hand_pick;
-    double L_hand_load;
 
     double shot_power_shooter_init;
     double shot_power_load;
@@ -392,11 +373,6 @@ class tr_nodelet_main : public nodelet::Nodelet
     int currentCommandIndex = 0;
     
     static const std::vector<OpMode> opmode;
-    static const std::vector<ControllerCommands> launch_short_test_commands;
-    static const std::vector<ControllerCommands> launch_medium_test_commands;
-    static const std::vector<ControllerCommands> launch_long_test_commands;
-    static const std::vector<ControllerCommands> load_test_commands;
-    static const std::vector<ControllerCommands> initial_pose;
     static const std::vector<ControllerCommands> manual_all;
     //------------------------------------------------------------------------
     static const std::vector<ControllerCommands> Shot_and_SetLoadPos_commands;
@@ -442,232 +418,6 @@ const std::vector<OpMode> tr_nodelet_main::opmode{
     }
 };
 
-const std::vector<ControllerCommands> tr_nodelet_main::launch_short_test_commands(
-    {
-        ControllerCommands::adjust_launchers_force_short,
-        ControllerCommands::adjust_launchers_angular_short,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::release_shooter,
-        ControllerCommands::set_delay_250ms,
-        ControllerCommands::delay,
-        ControllerCommands::launcher_move_top,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::adjust_launchers_angular_right,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::grab_shooter,
-        ControllerCommands::set_delay_500ms,
-        ControllerCommands::delay,
-        ControllerCommands::launcher_move_bottom,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        
-    }
-);
-
-const std::vector<ControllerCommands> tr_nodelet_main::launch_medium_test_commands(
-    {
-        ControllerCommands::adjust_launchers_force_medium,
-        ControllerCommands::adjust_launchers_angular_medium,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::release_shooter,
-        ControllerCommands::set_delay_250ms,
-        ControllerCommands::delay,
-        ControllerCommands::launcher_move_top,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::adjust_launchers_angular_right,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::grab_shooter,
-        ControllerCommands::set_delay_500ms,
-        ControllerCommands::delay,
-        ControllerCommands::launcher_move_bottom,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-    }
-);
-const std::vector<ControllerCommands> tr_nodelet_main::launch_long_test_commands(
-    {
-        ControllerCommands::adjust_launchers_force_long,
-        ControllerCommands::adjust_launchers_angular_long,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::set_delay_500ms,
-        ControllerCommands::delay,
-        ControllerCommands::release_shooter,
-        ControllerCommands::set_delay_500ms,
-        ControllerCommands::delay,
-        ControllerCommands::launcher_move_top,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::adjust_launchers_angular_right,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::set_delay_250ms,
-        ControllerCommands::delay,
-        ControllerCommands::grab_shooter,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::launcher_move_bottom,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-    }
-);
-
-const std::vector<ControllerCommands> tr_nodelet_main::load_test_commands(
-    {
-        ControllerCommands::arm_rotate_to_PI,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::table_move_to_launcher,
-        ControllerCommands::set_delay_250ms,
-        ControllerCommands::delay,
-        ControllerCommands::table_rotate_to_launcher,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::adjust_arm_to_set,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::set_delay_500ms,
-        ControllerCommands::delay,
-        ControllerCommands::release_arrow,
-        ControllerCommands::set_delay_500ms,
-        ControllerCommands::delay,
-        ControllerCommands::table_move_to_base,
-        ControllerCommands::adjust_arm_to_grab,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::table_rotate_to_base,
-        ControllerCommands::arm_rotate_to_0,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        
-    }
-);
-
-const std::vector<ControllerCommands> tr_nodelet_main::initial_pose(
-
-    {
-        ControllerCommands::release_arrow,
-        ControllerCommands::set_delay_250ms,
-        ControllerCommands::delay,
-        ControllerCommands::table_move_to_base,
-        ControllerCommands::set_delay_250ms,
-        ControllerCommands::delay,
-        ControllerCommands::table_rotate_to_base,
-        ControllerCommands::adjust_arm_to_grab,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::launcher_move_bottom,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::set_delay_500ms,
-        ControllerCommands::delay,
-        ControllerCommands::release_shooter,
-        ControllerCommands::set_delay_500ms,
-        ControllerCommands::delay,
-        ControllerCommands::launcher_move_top,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::grab_shooter,
-        ControllerCommands::set_delay_500ms,
-        ControllerCommands::delay,
-        ControllerCommands::home,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-
-    } 
-
-);
-
 const std::vector<ControllerCommands> tr_nodelet_main::manual_all(
     {
         ControllerCommands::manual,
@@ -676,16 +426,12 @@ const std::vector<ControllerCommands> tr_nodelet_main::manual_all(
 
 const std::vector<ControllerCommands> tr_nodelet_main::Shot_and_SetLoadPos_commands(
     {
-        ControllerCommands::r_hand_shutdown,
-        ControllerCommands::l_hand_shutdown,
         ControllerCommands::shooter_release,
         ControllerCommands::set_delay_250ms,
         ControllerCommands::delay,
         ControllerCommands::shooter_init,
         ControllerCommands::angle_init,
         //ControllerCommands::r_hand_homing,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
         ControllerCommands::set_delay_1s,
         ControllerCommands::delay,
         ControllerCommands::set_delay_1s,
@@ -743,16 +489,12 @@ void tr_nodelet_main::onInit(){
     _nh.param("R_height_pick", this->R_height_pick, 0.0);
     _nh.param("R_height_load_standby", this->R_height_load_standby, 0.0);
     _nh.param("R_height_load", this->R_height_load, 0.0);
-    _nh.param("R_hand_pick", this->R_hand_pick, 0.0);
-    _nh.param("R_hand_load", this->R_hand_load, 0.0);
     _nh.param("L_base_pick_standby", this->L_base_pick_standby, 0.0);
     _nh.param("L_base_pick", this->L_base_pick, 0.0);
     _nh.param("L_base_load", this->L_base_load, 0.0);
     _nh.param("L_height_pick", this->L_height_pick, 0.0);
     _nh.param("L_height_load_standby", this->L_height_load_standby, 0.0);
     _nh.param("L_height_load", this->L_height_load, 0.0);
-    _nh.param("L_hand_pick", this->L_hand_pick, 0.0);
-    _nh.param("L_hand_load", this->L_hand_load, 0.0);
     _nh.param("shot_power_shooter_init", this->shot_power_shooter_init, 0.0);
     _nh.param("shot_power_load", this->shot_power_load, 0.0);
     _nh.param("shot_power_launch_pos_1", this->shot_power_launch_pos_1, 0.0);
@@ -801,20 +543,17 @@ void tr_nodelet_main::onInit(){
     this->Pick_R_Height_Cmd_pub = nh.advertise<std_msgs::UInt8>("Pick_R_Height_cmd", 1);
     this->Pick_R_Height_Pos_pub = nh.advertise<std_msgs::Float64>("Pick_R_Height_cmd_pos", 1);
 
-    this->Pick_R_Hand_Cmd_pub = nh.advertise<std_msgs::UInt8>("Pick_R_Hand_cmd", 1);
-  	this->Pick_R_Hand_Pos_pub = nh.advertise<std_msgs::Float64>("Pick_R_Hand_cmd_pos", 1);
-
     this->Pick_L_Base_Cmd_pub = nh.advertise<std_msgs::UInt8>("Pick_L_Base_cmd", 1);
   	this->Pick_L_Base_Pos_pub = nh.advertise<std_msgs::Float64>("Pick_L_Base_cmd_pos", 1);
 
     this->Pick_L_Height_Cmd_pub = nh.advertise<std_msgs::UInt8>("Pick_L_Height_cmd", 1);
     this->Pick_L_Height_Pos_pub = nh.advertise<std_msgs::Float64>("Pick_L_Height_cmd_pos", 1);
-
-    this->Pick_L_Hand_Cmd_pub = nh.advertise<std_msgs::UInt8>("Pick_L_Hand_cmd", 1);
-  	this->Pick_L_Hand_Pos_pub = nh.advertise<std_msgs::Float64>("Pick_L_Hand_cmd_pos", 1);
   
-    this->SolenoidCmd_pub = nh.advertise<std_msgs::UInt8>("solenoid_cmd", 1);
-    this->SolenoidOrder_pub = nh.advertise<std_msgs::UInt8>("solenoid_order", 1);
+    this->Solenoid1_Cmd_pub = nh.advertise<std_msgs::UInt8>("solenoid1_cmd", 1);
+    this->Solenoid1_Order_pub = nh.advertise<std_msgs::UInt8>("solenoid1_order", 1);
+
+    this->Solenoid2_Cmd_pub = nh.advertise<std_msgs::UInt8>("solenoid2_cmd", 1);
+    this->Solenoid2_Order_pub = nh.advertise<std_msgs::UInt8>("solenoid2_order", 1);
 
     this->act_enable_pub0 = nh.advertise<std_msgs::UInt8>("foot0_cmd", 1);
     this->act_enable_pub1 = nh.advertise<std_msgs::UInt8>("foot1_cmd", 1);
@@ -894,10 +633,8 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
         //------------------------------------------------------------
         if(_righttrigger){
             //Cyl_shooter_release();
-            Pick_R_Hand_Homing();
             Pick_R_Base_Homing();
             Pick_R_Height_Homing();
-            Pick_L_Hand_Homing();
             Pick_L_Base_Homing();
             Pick_L_Height_Homing();
             Shot_Angle_Homing();
@@ -939,32 +676,24 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
             this->command_list = &Shot_and_SetLoadPos_commands;
             _command_ongoing = true;
         }
-        if(_y){
-            //if(!this->_moving){
-                if(Pick_mode == 3){
-                    Pick_mode = 0;
-                }else{
-                    Pick_mode++;
-                }
-            //}
+        if(_y){            
+            if(Pick_mode == 3){
+                Pick_mode = 0;
+            }else{
+                Pick_mode++;
+            }
             _y_enable = false;
         }else{
             _y_enable = true;
         }
         if(_a){
             if(_hand_pos_change){
-                Pick_R_Hand_Homing();
-                Pick_L_Hand_Homing();
+                Cyl_R_hand_roll_load();
+                Cyl_L_hand_roll_load();
                 _hand_pos_change = false;
             }else{
-                R_hand_recover();
-                L_hand_recover();
-                delay_start(0.5);
-                R_hand_move_pick_arrow();
-                L_hand_move_pick_arrow();
-                delay_start(1.0);
-                R_hand_shutdown();
-                L_hand_shutdown();
+                Cyl_R_hand_roll_pick();
+                Cyl_L_hand_roll_pick();
                 _hand_pos_change = true;
             }
             _a_enable = false;
@@ -999,26 +728,18 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
             shot_power_adjust += joy->buttons[ButtonLeftThumb] * 2;
             shot_power_adjust -= joy->buttons[ButtonRightThumb] * 2;
             if(_pady == 1){
-                Pick_R_Hand_Homing();
-                Pick_L_Hand_Homing();
                 Shot_Power_move_target(shot_power_launch_pos_1 + shot_power_adjust);
                 Shot_Angle_move_target(shot_angle_launch_pos_1);
             }
             if(_padx == 1){
-                Pick_R_Hand_Homing();
-                Pick_L_Hand_Homing();
                 Shot_Power_move_target(shot_power_launch_pos_2 + shot_power_adjust);
                 Shot_Angle_move_target(shot_angle_launch_pos_2);
             }
             if(_padx == -1){
-                Pick_R_Hand_Homing();
-                Pick_L_Hand_Homing();
                 Shot_Power_move_target(shot_power_launch_pos_3 + shot_power_adjust);
                 Shot_Angle_move_target(shot_angle_launch_pos_3);
             }
             if(_pady == -1){
-                Pick_R_Hand_Homing();
-                Pick_L_Hand_Homing();
                 Shot_Power_move_target(shot_power_launch_pos_4 + shot_power_adjust);
                 Shot_Angle_move_target(shot_angle_launch_pos_4);
             }
@@ -1043,12 +764,11 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
                 switch (R_load_mode)
                 {
                 case 0:
-                    Pick_R_Hand_Homing();
+                    Cyl_R_hand_roll_load();
                     break;
                 case 1:
                     Cyl_base_load();
                     R_base_move_load_arrow();
-                    R_hand_move_load_arrow();
                     R_height_adjust += joy->buttons[ButtonLeftThumb] * 2;
                     R_height_adjust -= joy->buttons[ButtonRightThumb] * 2;
                     R_height_move_target(this->R_height_load_standby + R_height_adjust);
@@ -1056,16 +776,9 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
                 case 2:
                     Cyl_R_hand_release();
                     Cyl_base_pick();
+                    Cyl_R_hand_roll_pick();
                     R_base_move_pick_standby_arrow();
                     R_height_move_pick_arrow();
-                    Pick_R_Hand_Homing();
-                    //delay_start(1.5);
-                    //Pick_R_Hand_Homing();
-                    //R_hand_recover();
-                    //delay_start(0.1);
-                    //R_hand_move_pick_arrow();
-                    //delay_start(1.5);
-                    //R_hand_shutdown();
                     R_height_adjust = 0.0;
                     _R_loading = false;
                     _loaded = true;
@@ -1077,12 +790,11 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
                 switch (L_load_mode)
                 {
                 case 0:
-                    Pick_L_Hand_Homing();
+                    Cyl_L_hand_roll_load();
                     break;
                 case 1:
                     Cyl_base_load();
                     L_base_move_load_arrow();
-                    L_hand_move_load_arrow();
                     L_height_adjust += joy->buttons[ButtonLeftThumb] * 2;
                     L_height_adjust -= joy->buttons[ButtonRightThumb] * 2;
                     L_height_move_target(this->L_height_load_standby + L_height_adjust);
@@ -1090,15 +802,9 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
                 case 2:
                     Cyl_L_hand_release();
                     Cyl_base_pick();
+                    Cyl_L_hand_roll_pick();
                     L_base_move_pick_standby_arrow();
                     L_height_move_pick_arrow();
-                    Pick_L_Hand_Homing();
-                    //delay_start(1.5);
-                    //Pick_L_Hand_Homing();
-                    //L_hand_recover();
-                    //L_hand_move_pick_arrow();
-                    //delay_start(1.5);
-                    //L_hand_shutdown();
                     L_height_adjust = 0.0;
                     _L_loading = false;
                     _loaded = true;
@@ -1112,67 +818,37 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
             L_load_mode = -1;
             switch (Pick_mode)
             {
-            //case 0:
-            //    Pick_R_Hand_Homing();
-            //    Pick_L_Hand_Homing();
-            //    break;
-//
-            //case 1:
-            //    Pick_R_Hand_Homing();
-            //    Pick_L_Hand_Homing();
-            //    break;
-
             case 0:
-                //this->_moving = true;
-                Cyl_R_hand_release();
                 Cyl_base_pick();
+                Cyl_R_hand_roll_pick();
+                Cyl_L_hand_roll_pick();
                 R_base_move_pick_standby_arrow();
                 R_height_move_pick_arrow();
-                Cyl_L_hand_release();
                 L_base_move_pick_standby_arrow();
                 L_height_move_pick_arrow();
-                //delay_start(1.5);
-                //Pick_R_Hand_Homing();
-                //Pick_L_Hand_Homing();
-                //delay_start(0.5);
-                //R_hand_recover();
-                //L_hand_recover();
-                //delay_start(0.5);
-                //R_hand_move_pick_arrow();
-                //L_hand_move_pick_arrow();
-                //delay_start(1.5);
-                //R_hand_shutdown();
-                //L_hand_shutdown();
-                //this->_moving = false;
                 break;
             
             case 1:
                 R_base_move_pick_arrow();
                 R_height_move_pick_arrow();
-                //R_hand_move_pick_arrow();
                 L_base_move_pick_arrow();
                 L_height_move_pick_arrow();
-                //L_hand_move_pick_arrow();
                 break;
 
             case 2:
                 Cyl_R_hand_grab();
                 R_base_move_pick_arrow();
                 R_height_move_pick_arrow();
-                //R_hand_move_pick_arrow();
                 Cyl_L_hand_grab();
                 L_base_move_pick_arrow();
                 L_height_move_pick_arrow();
-                //L_hand_move_pick_arrow();
                 break;
 
             case 3:
                 R_base_move_pick_arrow();
                 R_height_move_load_standby_arrow();
-                //R_hand_move_pick_arrow();
                 L_base_move_pick_arrow();
                 L_height_move_load_standby_arrow();
-                //L_hand_move_pick_arrow();
                 break;
             }
         }
@@ -1330,7 +1006,7 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
         //if (_x && !last_x)
         //{
         //    
-        //    if ((((this->lastSolenoidOrder) >> (4)) & 1) == 1)
+        //    if ((((this->lastSolenoid_1_Order) >> (4)) & 1) == 1)
         //    {
         //        
         //        this->grab_arrow();
@@ -1374,56 +1050,12 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
 }
 
 
-void tr_nodelet_main::release_shooter(void){
-  this->lastSolenoidOrder |= (uint8_t)SolenoidValveCommands::shooter_cmd;
-  this->solenoid_order_msg.data = this->lastSolenoidOrder;
-  this->SolenoidOrder_pub.publish(this->solenoid_order_msg);
-  this->SolenoidOrder_pub.publish(this->solenoid_order_msg);
-}
-
-void tr_nodelet_main::grab_shooter(void){
-  this->lastSolenoidOrder &= ~(uint8_t)SolenoidValveCommands::shooter_cmd;
-  this->solenoid_order_msg.data = this->lastSolenoidOrder;
-  this->SolenoidOrder_pub.publish(this->solenoid_order_msg);
-  this->SolenoidOrder_pub.publish(this->solenoid_order_msg);
-}
-
-void tr_nodelet_main::adjust_arm(float movelength){
-  this->arm_movelength = movelength;
-  this->Pick_R_height_pos_msg.data = movelength;
-  this->Pick_R_Height_Pos_pub.publish(this->Pick_R_height_pos_msg);
-}
-void tr_nodelet_main::adjust_arm_to_grab(void){
-  this->adjust_arm(9.6);
-}
-void tr_nodelet_main::adjust_arm_to_set(void){
-  this->adjust_arm(6.9);
-}
-void tr_nodelet_main::adjust_arm_to_lift(void){
-  this->adjust_arm(30.5);
-}
-void tr_nodelet_main::launcher_move(float movelength){
-    this->shot_power_pos_msg.data = movelength;
-    this->Shot_Power_Pos_pub.publish(shot_power_pos_msg);
-}
-
-
-void tr_nodelet_main::reset_launcher(void){
-  this->grab_shooter();
-  this->launcher_move(0);
-  this->shot_angle_pos_msg.data = 0;
-  this->Shot_Angle_Pos_pub.publish(this->shot_angle_pos_msg);
-}
 
 //void tr_nodelet_main::launcher_move(float movelength){
    //double init_radian = movelength*2*pi/(this->toothperrotate*this->lengthperbit); 
    //this->shot_power_pos_msg.data = init_radian;
    //this->Shot_Power_Pos_pub.publish(this->shot_power_pos_msg);
 //}
-
-void tr_nodelet_main::adjust_launcher_force(float pulllength){
-   this->launcher_move(this->launcherlength-pulllength);                                       
-}
 
 //void tr_nodelet_main::adjust_launcher_radian(float launchangle){
    // calculate the launch angle from the law of cosines
@@ -1432,50 +1064,6 @@ void tr_nodelet_main::adjust_launcher_force(float pulllength){
    //this->Shot_Angle_Pos_pub.publish(this->shot_angle_pos_msg);
 //}
 
-void tr_nodelet_main::reset_launcher_status(void){
-   this->act_conf_cmd_msg.data= (uint8_t)SolenoidValveCommands::shutdown_cmd;
-   this->SolenoidCmd_pub.publish(this->act_conf_cmd_msg);
-   this->act_conf_cmd_msg.data= (uint8_t)SolenoidValveCommands::recover_cmd;
-   this->SolenoidCmd_pub.publish(this->act_conf_cmd_msg);
-}
-
-void tr_nodelet_main::grab_arrow(void){
-  this->lastSolenoidOrder &= ~(uint8_t)SolenoidValveCommands::R_hand_cmd;
-  this->solenoid_order_msg.data = this->lastSolenoidOrder;
-  this->SolenoidOrder_pub.publish(this->solenoid_order_msg);
-  this->SolenoidOrder_pub.publish(this->solenoid_order_msg);
-}
-
-void tr_nodelet_main::release_arrow(void){
-  this->lastSolenoidOrder |= (uint8_t)SolenoidValveCommands::R_hand_cmd;
-  this->solenoid_order_msg.data = this->lastSolenoidOrder;
-  this->SolenoidOrder_pub.publish(this->solenoid_order_msg);
-  this->SolenoidOrder_pub.publish(this->solenoid_order_msg);
-}
-
-void tr_nodelet_main::base_rotate(float rotate_angle){ 
-  this->base_rotate_angle = rotate_angle; 
-  this->Pick_R_base_pos_msg.data = rotate_angle;
-  this->Pick_R_Base_Pos_pub.publish(this->Pick_R_base_pos_msg);
-}
-
-void tr_nodelet_main::table_move_to_launcher(void){
-  this->lastSolenoidOrder |= (uint8_t)SolenoidValveCommands::move_base_cmd;
-  this->solenoid_order_msg.data = this->lastSolenoidOrder;
-  this->SolenoidOrder_pub.publish(this->solenoid_order_msg);
-}
-
-void tr_nodelet_main::table_move_to_base(void){
-  this->lastSolenoidOrder &= ~(uint8_t)SolenoidValveCommands::move_base_cmd;
-  this->solenoid_order_msg.data = this->lastSolenoidOrder;
-  this->SolenoidOrder_pub.publish(this->solenoid_order_msg);
-}
-
-void tr_nodelet_main::arm_rotate(float rotate_angle){
-  this->arm_rotete_angle = rotate_angle;
-  this->Pick_R_hand_pos_msg.data = rotate_angle;
-  this->Pick_R_Hand_Pos_pub.publish(this->Pick_R_hand_pos_msg);
-}
 
 void tr_nodelet_main::clear_flags(void){
         this->_is_operating = false;
@@ -1502,15 +1090,14 @@ void tr_nodelet_main::shutdown(void){
     Shot_Angle_Cmd_pub.publish(act_conf_cmd_msg);
     Pick_R_Base_Cmd_pub.publish(act_conf_cmd_msg);
     Pick_R_Height_Cmd_pub.publish(act_conf_cmd_msg);
-    Pick_R_Hand_Cmd_pub.publish(act_conf_cmd_msg);
     Pick_L_Base_Cmd_pub.publish(act_conf_cmd_msg);
     Pick_L_Height_Cmd_pub.publish(act_conf_cmd_msg);
-    Pick_L_Hand_Cmd_pub.publish(act_conf_cmd_msg);
     act_enable_pub0.publish(act_conf_cmd_msg);
     act_enable_pub1.publish(act_conf_cmd_msg);
     act_enable_pub2.publish(act_conf_cmd_msg);
     act_enable_pub3.publish(act_conf_cmd_msg);
-    SolenoidCmd_pub.publish(act_conf_cmd_msg);
+    Solenoid1_Cmd_pub.publish(act_conf_cmd_msg);
+    Solenoid2_Cmd_pub.publish(act_conf_cmd_msg);
 }
 
 void tr_nodelet_main::recover(void){
@@ -1519,15 +1106,14 @@ void tr_nodelet_main::recover(void){
     Shot_Angle_Cmd_pub.publish(act_conf_cmd_msg);
     Pick_R_Base_Cmd_pub.publish(act_conf_cmd_msg);
     Pick_R_Height_Cmd_pub.publish(act_conf_cmd_msg);
-    Pick_R_Hand_Cmd_pub.publish(act_conf_cmd_msg);
     Pick_L_Base_Cmd_pub.publish(act_conf_cmd_msg);
     Pick_L_Height_Cmd_pub.publish(act_conf_cmd_msg);
-    Pick_L_Hand_Cmd_pub.publish(act_conf_cmd_msg);
     act_enable_pub0.publish(act_conf_cmd_msg);
     act_enable_pub1.publish(act_conf_cmd_msg);
     act_enable_pub2.publish(act_conf_cmd_msg);
     act_enable_pub3.publish(act_conf_cmd_msg);
-    SolenoidCmd_pub.publish(act_conf_cmd_msg);
+    Solenoid1_Cmd_pub.publish(act_conf_cmd_msg);
+    Solenoid2_Cmd_pub.publish(act_conf_cmd_msg);
 }
 
 void tr_nodelet_main::homing(void){
@@ -1575,13 +1161,6 @@ void tr_nodelet_main::Pick_R_Height_Homing(void){
     Pick_R_Height_Cmd_pub.publish(act_conf_cmd_msg);
 }
 
-void tr_nodelet_main::Pick_R_Hand_Homing(void){
-    act_conf_cmd_msg.data = (uint8_t)MotorCommands::shutdown_cmd;
-    Pick_R_Hand_Cmd_pub.publish(act_conf_cmd_msg);
-    act_conf_cmd_msg.data = (uint8_t)MotorCommands::homing_cmd;
-    Pick_R_Hand_Cmd_pub.publish(act_conf_cmd_msg);
-}
-
 void tr_nodelet_main::Pick_L_Base_Homing(void){
     act_conf_cmd_msg.data = (uint8_t)MotorCommands::shutdown_cmd;
     Pick_L_Base_Cmd_pub.publish(act_conf_cmd_msg);
@@ -1594,13 +1173,6 @@ void tr_nodelet_main::Pick_L_Height_Homing(void){
     Pick_L_Height_Cmd_pub.publish(act_conf_cmd_msg);
     act_conf_cmd_msg.data = (uint8_t)MotorCommands::homing_cmd;
     Pick_L_Height_Cmd_pub.publish(act_conf_cmd_msg);
-}
-
-void tr_nodelet_main::Pick_L_Hand_Homing(void){
-    act_conf_cmd_msg.data = (uint8_t)MotorCommands::shutdown_cmd;
-    Pick_L_Hand_Cmd_pub.publish(act_conf_cmd_msg);
-    act_conf_cmd_msg.data = (uint8_t)MotorCommands::homing_cmd;
-    Pick_L_Hand_Cmd_pub.publish(act_conf_cmd_msg);
 }
 
 void tr_nodelet_main::R_base_move_pick_standby_arrow(void){
@@ -1638,26 +1210,6 @@ void tr_nodelet_main::R_height_move_target(double target){
     this->Pick_R_Height_Pos_pub.publish(this->Pick_R_height_pos_msg);
 }
 
-void tr_nodelet_main::R_hand_move_pick_arrow(void){
-    this->Pick_R_hand_pos_msg.data = this->R_hand_pick;
-    this->Pick_R_Hand_Pos_pub.publish(this->Pick_R_hand_pos_msg);
-}
-
-void tr_nodelet_main::R_hand_move_load_arrow(void){
-    this->Pick_R_hand_pos_msg.data = this->R_hand_load;
-    this->Pick_R_Hand_Pos_pub.publish(this->Pick_R_hand_pos_msg);
-}
-
-void tr_nodelet_main::R_hand_shutdown(void){
-    this->act_conf_cmd_msg.data = (uint8_t)MotorCommands::shutdown_cmd;
-    this->Pick_R_Hand_Cmd_pub.publish(this->act_conf_cmd_msg);
-}
-
-void tr_nodelet_main::R_hand_recover(void){
-    this->act_conf_cmd_msg.data = (uint8_t)MotorCommands::recover_cmd;
-    this->Pick_R_Hand_Cmd_pub.publish(this->act_conf_cmd_msg);
-}
-
 void tr_nodelet_main::L_base_move_pick_standby_arrow(void){
     this->Pick_L_base_pos_msg.data = this->L_base_pick_standby;
     this->Pick_L_Base_Pos_pub.publish(this->Pick_L_base_pos_msg);
@@ -1693,26 +1245,6 @@ void tr_nodelet_main::L_height_move_target(double target){
     this->Pick_L_Height_Pos_pub.publish(this->Pick_L_height_pos_msg);
 }
 
-void tr_nodelet_main::L_hand_move_pick_arrow(void){
-    this->Pick_L_hand_pos_msg.data = this->L_hand_pick;
-    this->Pick_L_Hand_Pos_pub.publish(this->Pick_L_hand_pos_msg);
-}
-
-void tr_nodelet_main::L_hand_move_load_arrow(void){
-    this->Pick_L_hand_pos_msg.data = this->L_hand_load;
-    this->Pick_L_Hand_Pos_pub.publish(this->Pick_L_hand_pos_msg);
-}
-
-void tr_nodelet_main::L_hand_shutdown(void){
-    this->act_conf_cmd_msg.data = (uint8_t)MotorCommands::shutdown_cmd;
-    this->Pick_L_Hand_Cmd_pub.publish(this->act_conf_cmd_msg);
-}
-
-void tr_nodelet_main::L_hand_recover(void){
-    this->act_conf_cmd_msg.data = (uint8_t)MotorCommands::recover_cmd;
-    this->Pick_L_Hand_Cmd_pub.publish(this->act_conf_cmd_msg);
-}
-
 void tr_nodelet_main::Shot_Power_move_shooterinit(void){
     this->shot_power_pos_msg.data = this->shot_power_shooter_init;
     this->Shot_Power_Pos_pub.publish(this->shot_power_pos_msg);
@@ -1734,51 +1266,75 @@ void tr_nodelet_main::Shot_Angle_move_target(double target){
 }
 
 void tr_nodelet_main::Cyl_base_pick(void){
-    this->lastSolenoidOrder &= ~(uint8_t)SolenoidValveCommands::move_base_cmd;
-    this->solenoid_order_msg.data = this->lastSolenoidOrder;
-    this->SolenoidOrder_pub.publish(this->solenoid_order_msg);
+    this->lastSolenoid_1_Order &= ~(uint8_t)SolenoidValveCommands::move_base_cmd;
+    this->solenoid1_order_msg.data = this->lastSolenoid_1_Order;
+    this->Solenoid1_Order_pub.publish(this->solenoid1_order_msg);
 }
 
 void tr_nodelet_main::Cyl_base_load(void){
-    this->lastSolenoidOrder |= (uint8_t)SolenoidValveCommands::move_base_cmd;
-    this->solenoid_order_msg.data = this->lastSolenoidOrder;
-    this->SolenoidOrder_pub.publish(this->solenoid_order_msg);
+    this->lastSolenoid_1_Order |= (uint8_t)SolenoidValveCommands::move_base_cmd;
+    this->solenoid1_order_msg.data = this->lastSolenoid_1_Order;
+    this->Solenoid1_Order_pub.publish(this->solenoid1_order_msg);
 }
 
 void tr_nodelet_main::Cyl_R_hand_grab(void){
-    this->lastSolenoidOrder |= (uint8_t)SolenoidValveCommands::R_hand_cmd;
-    this->solenoid_order_msg.data = this->lastSolenoidOrder;
-    this->SolenoidOrder_pub.publish(this->solenoid_order_msg);
+    this->lastSolenoid_1_Order |= (uint8_t)SolenoidValveCommands::R_hand_cmd;
+    this->solenoid1_order_msg.data = this->lastSolenoid_1_Order;
+    this->Solenoid1_Order_pub.publish(this->solenoid1_order_msg);
 }
 
 void tr_nodelet_main::Cyl_R_hand_release(void){
-    this->lastSolenoidOrder &= ~(uint8_t)SolenoidValveCommands::R_hand_cmd;
-    this->solenoid_order_msg.data = this->lastSolenoidOrder;
-    this->SolenoidOrder_pub.publish(this->solenoid_order_msg);
+    this->lastSolenoid_1_Order &= ~(uint8_t)SolenoidValveCommands::R_hand_cmd;
+    this->solenoid1_order_msg.data = this->lastSolenoid_1_Order;
+    this->Solenoid1_Order_pub.publish(this->solenoid1_order_msg);
 }
 
 void tr_nodelet_main::Cyl_L_hand_grab(void){
-    this->lastSolenoidOrder |= (uint8_t)SolenoidValveCommands::L_hand_cmd;
-    this->solenoid_order_msg.data = this->lastSolenoidOrder;
-    this->SolenoidOrder_pub.publish(this->solenoid_order_msg);
+    this->lastSolenoid_1_Order |= (uint8_t)SolenoidValveCommands::L_hand_cmd;
+    this->solenoid1_order_msg.data = this->lastSolenoid_1_Order;
+    this->Solenoid1_Order_pub.publish(this->solenoid1_order_msg);
 }
 
 void tr_nodelet_main::Cyl_L_hand_release(void){
-    this->lastSolenoidOrder &= ~(uint8_t)SolenoidValveCommands::L_hand_cmd;
-    this->solenoid_order_msg.data = this->lastSolenoidOrder;
-    this->SolenoidOrder_pub.publish(this->solenoid_order_msg);
+    this->lastSolenoid_1_Order &= ~(uint8_t)SolenoidValveCommands::L_hand_cmd;
+    this->solenoid1_order_msg.data = this->lastSolenoid_1_Order;
+    this->Solenoid1_Order_pub.publish(this->solenoid1_order_msg);
 }
 
 void tr_nodelet_main::Cyl_shooter_grab(void){
-    this->lastSolenoidOrder &= ~(uint8_t)SolenoidValveCommands::shooter_cmd;
-    this->solenoid_order_msg.data = this->lastSolenoidOrder;
-    this->SolenoidOrder_pub.publish(this->solenoid_order_msg);
+    this->lastSolenoid_1_Order &= ~(uint8_t)SolenoidValveCommands::shooter_cmd;
+    this->solenoid1_order_msg.data = this->lastSolenoid_1_Order;
+    this->Solenoid1_Order_pub.publish(this->solenoid1_order_msg);
 }
 
 void tr_nodelet_main::Cyl_shooter_release(void){
-    this->lastSolenoidOrder |= (uint8_t)SolenoidValveCommands::shooter_cmd;
-    this->solenoid_order_msg.data = this->lastSolenoidOrder;
-    this->SolenoidOrder_pub.publish(this->solenoid_order_msg);
+    this->lastSolenoid_1_Order |= (uint8_t)SolenoidValveCommands::shooter_cmd;
+    this->solenoid1_order_msg.data = this->lastSolenoid_1_Order;
+    this->Solenoid1_Order_pub.publish(this->solenoid1_order_msg);
+}
+
+void tr_nodelet_main::Cyl_R_hand_roll_pick(void){
+    this->lastSolenoid_1_Order &= ~(uint8_t)SolenoidValveCommands::R_hand_roll_cmd;
+    this->solenoid1_order_msg.data = this->lastSolenoid_1_Order;
+    this->Solenoid1_Order_pub.publish(this->solenoid1_order_msg);
+}
+
+void tr_nodelet_main::Cyl_R_hand_roll_load(void){
+    this->lastSolenoid_1_Order |= (uint8_t)SolenoidValveCommands::R_hand_roll_cmd;
+    this->solenoid1_order_msg.data = this->lastSolenoid_1_Order;
+    this->Solenoid1_Order_pub.publish(this->solenoid1_order_msg);
+}
+
+void tr_nodelet_main::Cyl_L_hand_roll_pick(void){
+    this->lastSolenoid_1_Order &= ~(uint8_t)SolenoidValveCommands::L_hand_roll_cmd;
+    this->solenoid1_order_msg.data = this->lastSolenoid_1_Order;
+    this->Solenoid1_Order_pub.publish(this->solenoid1_order_msg);
+}
+
+void tr_nodelet_main::Cyl_L_hand_roll_load(void){
+    this->lastSolenoid_1_Order |= (uint8_t)SolenoidValveCommands::L_hand_roll_cmd;
+    this->solenoid1_order_msg.data = this->lastSolenoid_1_Order;
+    this->Solenoid1_Order_pub.publish(this->solenoid1_order_msg);
 }
 
 void tr_nodelet_main::delay_start(double delay_s)
@@ -1821,159 +1377,6 @@ void tr_nodelet_main::control_timer_callback(const ros::TimerEvent &event)
         this->homing();
         this->currentCommandIndex++;
         NODELET_INFO("home");
-    }
-    else if(currentCommand == ControllerCommands::adjust_arm_to_grab)
-    {   //arm_movelength = 35;
-        this->adjust_arm_to_grab();
-        this->currentCommandIndex++;
-        NODELET_INFO("adjust_arm_to_grab");
-    }
-    else if(currentCommand == ControllerCommands::adjust_arm_to_set)
-    {   //arm_movelength = 35;
-        this->adjust_arm_to_set(); 
-        this->currentCommandIndex++;
-        NODELET_INFO("adjust_arm_to_set");
-    }
-    else if(currentCommand == ControllerCommands::adjust_launchers_force_short)
-    {
-        this->shot_power_pos_msg.data = -20;
-        this->Shot_Power_Pos_pub.publish(shot_power_pos_msg);
-        this->currentCommandIndex++;
-        NODELET_INFO("adjust_launchers_force_short");
-    }
-    else if(currentCommand == ControllerCommands::adjust_launchers_force_medium)
-    {
-        this->shot_power_pos_msg.data = -8;
-        this->Shot_Power_Pos_pub.publish(shot_power_pos_msg);
-        this->currentCommandIndex++;
-        NODELET_INFO("adjust_launchers_force_medium");
-    }
-    else if(currentCommand == ControllerCommands::adjust_launchers_force_long)
-    {
-        this->shot_power_pos_msg.data = 0;
-        this->Shot_Power_Pos_pub.publish(shot_power_pos_msg);
-        this->currentCommandIndex++;
-        NODELET_INFO("adjust_launchers_force_long");
-    }
-    else if(currentCommand == ControllerCommands::adjust_launchers_angular_short)
-    {
-        this->shot_angle_pos_msg.data = 80;
-        this->Shot_Angle_Pos_pub.publish(shot_angle_pos_msg);
-        this->currentCommandIndex++;
-        NODELET_INFO("adjust_launchers_angular_short");
-    }
-    else if(currentCommand == ControllerCommands::adjust_launchers_angular_medium)
-    {
-        this->shot_angle_pos_msg.data = 160;
-        this->Shot_Angle_Pos_pub.publish(shot_angle_pos_msg);
-        this->currentCommandIndex++;
-        NODELET_INFO("adjust_launchers_angular_medium");
-    }
-    else if(currentCommand == ControllerCommands::adjust_launchers_angular_long)
-    {
-        this->shot_angle_pos_msg.data = 190;
-        this->Shot_Angle_Pos_pub.publish(shot_angle_pos_msg);
-        this->currentCommandIndex++;
-        NODELET_INFO("adjust_launchers_angular_long");
-    }
-    else if(currentCommand == ControllerCommands::adjust_launchers_angular_right)
-    {
-        act_conf_cmd_msg.data = (uint8_t)MotorCommands::shutdown_cmd;
-        Shot_Angle_Cmd_pub.publish(act_conf_cmd_msg);
-        act_conf_cmd_msg.data = (uint8_t)MotorCommands::homing_cmd;
-        Shot_Angle_Cmd_pub.publish(act_conf_cmd_msg);
-        this->currentCommandIndex++;
-        NODELET_INFO("adjust_launchers_angular_right");
-    }
-    else if(currentCommand == ControllerCommands::grab_arrow)
-    {   
-        this->grab_arrow();
-        this->currentCommandIndex++;
-        NODELET_INFO("grab_arrow");
-    }
-    else if(currentCommand == ControllerCommands::arm_rotate_to_PI)
-    {   
-        this->arm_rotate(pi);
-        this->currentCommandIndex++;
-        NODELET_INFO("arm_rotate_to_PI");
-    }
-    else if(currentCommand == ControllerCommands::arm_rotate_to_0)
-    {   
-        if(!this->_has_table_moved){
-        this->arm_rotate(0);
-        this->currentCommandIndex++;
-        NODELET_INFO("arm_rotate_to_0");
-        }
-
-    }
-    else if(currentCommand == ControllerCommands::release_arrow)
-    {   
-        this->release_arrow();
-        this->currentCommandIndex++;
-        NODELET_INFO("release_arrow");
-    }
-    else if(currentCommand == ControllerCommands::table_move_to_base)
-    {   
-        this->table_move_to_base();
-        this->currentCommandIndex++;
-        NODELET_INFO("table_move_to_base");
-    }
-    else if(currentCommand == ControllerCommands::table_move_to_launcher)
-    {   
-        this->table_move_to_launcher();
-        this->currentCommandIndex++;
-        NODELET_INFO("table_move_to_launcher");
-    }
-    else if(currentCommand == ControllerCommands::table_rotate_to_launcher)
-    {   
-        this->base_rotate(-1.592);
-        this->currentCommandIndex++;
-        NODELET_INFO("table_rotate_to_launcher");
-        this->_has_table_rotated = true;
-    }
-    else if(currentCommand == ControllerCommands::table_rotate_to_base)
-    {   
-        this->base_rotate(0);
-        this->currentCommandIndex++;
-        NODELET_INFO("table_rotate_to_base");
-        this->_has_table_rotated = false;
-    }
-    else if(currentCommand == ControllerCommands::launcher_move_top)
-    {   
-        if(!this->_has_table_rotated && ((this->lastSolenoidOrder & (uint8_t)SolenoidValveCommands::shooter_cmd) == (uint8_t)SolenoidValveCommands::shooter_cmd)){
-        this->launch_movelength=-34.1;
-        this->launcher_move(launch_movelength);
-        this->currentCommandIndex++;
-        NODELET_INFO("launcher_move_top");
-        }
-    }
-    else if(currentCommand == ControllerCommands::launcher_move_bottom)
-    {   
-        if(!this->_has_table_rotated){
-        act_conf_cmd_msg.data = (uint8_t)MotorCommands::shutdown_cmd;
-        Shot_Power_Cmd_pub.publish(act_conf_cmd_msg);
-        act_conf_cmd_msg.data = (uint8_t)MotorCommands::shutdown_cmd;
-        Shot_Power_Cmd_pub.publish(act_conf_cmd_msg);
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
-        act_conf_cmd_msg.data = (uint8_t)MotorCommands::homing_cmd;
-        Shot_Power_Cmd_pub.publish(act_conf_cmd_msg);
-        this->currentCommandIndex++;
-        NODELET_INFO("launcher_move_bottom");
-        }
-    }
-    else if(currentCommand == ControllerCommands::grab_shooter)
-    {  
-        this->grab_shooter();
-        this->currentCommandIndex++;
-        NODELET_INFO("grab_shooter");
-    }
-    else if(currentCommand == ControllerCommands::release_shooter)
-    {   
-        if(!this->_has_table_rotated){
-            this->release_shooter();
-            this->currentCommandIndex++;
-            NODELET_INFO("Launch!!");
-        }
     }
     else if (currentCommand == ControllerCommands::set_delay_250ms)
     {
@@ -2029,36 +1432,6 @@ void tr_nodelet_main::control_timer_callback(const ros::TimerEvent &event)
     else if (currentCommand == ControllerCommands::angle_init)
     {
         this->Shot_Angle_move_initial();
-        this->currentCommandIndex++;
-    }
-    else if (currentCommand == ControllerCommands::r_hand_shutdown)
-    {
-        this->R_hand_shutdown();
-        this->currentCommandIndex++;
-    }
-    else if (currentCommand == ControllerCommands::r_hand_recover)
-    {
-        this->R_hand_recover();
-        this->currentCommandIndex++;
-    }
-    else if (currentCommand == ControllerCommands::r_hand_homing)
-    {
-        this->Pick_R_Hand_Homing();
-        this->currentCommandIndex++;
-    }
-    else if (currentCommand == ControllerCommands::l_hand_shutdown)
-    {
-        this->L_hand_shutdown();
-        this->currentCommandIndex++;
-    }
-    else if (currentCommand == ControllerCommands::l_hand_recover)
-    {
-        this->L_hand_recover();
-        this->currentCommandIndex++;
-    }
-    else if (currentCommand == ControllerCommands::l_hand_homing)
-    {
-        this->Pick_L_Hand_Homing();
         this->currentCommandIndex++;
     }
     else if (currentCommand == ControllerCommands::riseflag_shooter_pos_load)
