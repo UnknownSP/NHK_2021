@@ -63,12 +63,6 @@
       <remap from="motor7_cmd" to="Pick_R_Height_cmd"/>
       <remap from="motor7_cmd_val" to="Pick_R_Height_cmd_pos"/>
     </node>
-    
-    <node pkg="nodelet" type="nodelet" name="motor8" args="$(arg nodelet_mode) can_plugins/Md201xNode $(arg manager_name)" >
-      <param name="bid" type="string" value="600" />
-      <remap from="motor8_cmd" to="Pick_R_Hand_cmd"/>
-      <remap from="motor8_cmd_val" to="Pick_R_Hand_cmd_pos"/>
-    </node>
 
     <node pkg="nodelet" type="nodelet" name="motor9" args="$(arg nodelet_mode) can_plugins/Md201xNode $(arg manager_name)" >
       <param name="bid" type="string" value="620" /> <!--640-->
@@ -81,22 +75,20 @@
       <remap from="motor10_cmd_val" to="Pick_L_Height_cmd_pos"/>
     </node>
     
-    <node pkg="nodelet" type="nodelet" name="motor11" args="$(arg nodelet_mode) can_plugins/Md201xNode $(arg manager_name)" >
-      <param name="bid" type="string" value="548" />
-      <remap from="motor11_cmd" to="Pick_L_Hand_cmd"/>
-      <remap from="motor11_cmd_val" to="Pick_L_Hand_cmd_pos"/>
-    </node>
-    
     <node pkg="nodelet" type="nodelet" name="tr_nodelet_main" args="$(arg nodelet_mode) tr/tr_nodelet_main $(arg manager_name)" >
-      <param name="R_base_pick_standby" type="double" value="2.55" />
-      <param name="R_base_pick" type="double" value="3.35" />
-      <param name="R_base_load" type="double" value="0.0" /> 
+      <param name="R_base_pick_standby_1" type="double" value="2.55" />
+      <param name="R_base_pick_1" type="double" value="3.20" />
+      <param name="R_base_pick_standby_2" type="double" value="1.75" />
+      <param name="R_base_pick_2" type="double" value="2.35" />
+      <param name="R_base_load" type="double" value="0.3" /> 
       <param name="R_height_pick" type="double" value="22.5" />
       <param name="R_height_load" type="double" value="17" />
       <param name="R_height_load_standby" type="double" value="38" /> 
-      <param name="L_base_pick_standby" type="double" value="-2.55" />
-      <param name="L_base_pick" type="double" value="-3.35" />
-      <param name="L_base_load" type="double" value="-0.0" />
+      <param name="L_base_pick_standby_1" type="double" value="-2.55" />
+      <param name="L_base_pick_1" type="double" value="-3.20" />
+      <param name="L_base_pick_standby_2" type="double" value="-1.75" />
+      <param name="L_base_pick_2" type="double" value="-2.35" />
+      <param name="L_base_load" type="double" value="-0.3" />
       <param name="L_height_pick" type="double" value="-22.5" />
       <param name="L_height_load" type="double" value="-17" />
       <param name="L_height_load_standby" type="double" value="-38" /> 
@@ -121,7 +113,7 @@
       <remap from="solenoid1_order" to="solenoid1_order"/>
     </node>
     <node pkg="solenoid_driver_node" type="solenoid_driver_node" name="solenoid2" >
-      <param name="bid" type="string" value="110" />
+      <param name="bid" type="string" value="120" />
       <param name="name" value="solenoid2"/>
       <remap from="solenoid2_cmd" to="solenoid2_cmd"/>
       <remap from="solenoid2_order" to="solenoid2_order"/>
