@@ -76,15 +76,21 @@
       <param name="Pos_3_RotStart_deg" type="double" value="1.72" />
       <param name="Pos_3_RotStop_cur" type="double" value="0" />
 
-      <param name="pitchright_init_deg" type="double" value="-1.0" />
-      <param name="pitchleft_init_deg" type="double" value="1.0" />
+      <param name="pitchright_init_deg" type="double" value="-0.5" />
       <!-- <param name="pitchrightpos_1_deg" type="double" value="-1.95" /> -->
       <!-- <param name="pitchleftpos_1_deg" type="double" value="2.06" /> -->
-      <param name="pitchrightpos_1_deg" type="double" value="-2.05" />
-      <param name="pitchleftpos_1_deg" type="double" value="2.15" />
+      <param name="pitchrightpos_1_deg" type="double" value="-1.55" />
+      <param name="pitchrightpos_2_deg" type="double" value="-1.55" />
+      <param name="pitchrightpos_3_deg" type="double" value="-1.45" />
+      
+      <param name="pitchright_avoid_arm_deg" type="double" value="-1.8" />
+      <!--<param name="pitchrightpos_1_deg" type="double" value="-2.05" />
       <param name="pitchrightpos_2_deg" type="double" value="-2.05" />
+      <param name="pitchrightpos_3_deg" type="double" value="-1.95" />-->
+
+      <param name="pitchleft_init_deg" type="double" value="1.0" />
+      <param name="pitchleftpos_1_deg" type="double" value="2.15" />
       <param name="pitchleftpos_2_deg" type="double" value="2.13" />
-      <param name="pitchrightpos_3_deg" type="double" value="-1.95" />
       <param name="pitchleftpos_3_deg" type="double" value="2.05" />
 
       <param name="Arrow_Pick_Arm_deg" type="double" value="2.2" />

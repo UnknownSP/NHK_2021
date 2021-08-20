@@ -55,6 +55,8 @@ enum class ControllerCommands : uint16_t
     ArmRotateToAdjustRackArrow,
     ArmRotateToAdjustRackArrow_high,
 
+    ArmRotateToRotStandby,
+
     WaitPickRackArrow,
 
     adjust_arm_to_launch,
@@ -75,7 +77,9 @@ enum class ControllerCommands : uint16_t
     Pitch_Homing,
     Pitch_MV_init,
     Pitch_MV_launch,
+    Pitch_MV_fast_launch,
     Pitch_MV_Zero,
+    Pitch_MV_avoid_arm,
 };
 
 enum class SolenoidValveCommands : uint8_t
@@ -217,6 +221,8 @@ private:
     double pitchrightpos_3_deg;
     double pitchleftpos_3_deg;
 
+    double pitchright_avoid_arm_deg;
+
     double pitchright_temp_deg;
     double pitchleft_temp_deg;
 
@@ -351,10 +357,16 @@ const std::vector<ControllerCommands> dr_nodelet_main::launch_short_test_command
     {
         ControllerCommands::recover_current,
         ControllerCommands::launch_short_start,
-        ControllerCommands::Pitch_MV_Zero,
+        //ControllerCommands::Pitch_MV_Zero,
         ControllerCommands::launch_and_home,
-        ControllerCommands::Pitch_Homing,
-        ControllerCommands::Pitch_Homing,
+        //ControllerCommands::set_delay_500ms,
+        //ControllerCommands::delay,
+        //ControllerCommands::Pitch_MV_avoid_arm,
+        //ControllerCommands::set_delay_1s,
+        //ControllerCommands::delay,
+        //ControllerCommands::arm_home,
+        //ControllerCommands::Pitch_Homing,
+        //ControllerCommands::Pitch_Homing,
     }
 );
 
@@ -362,20 +374,20 @@ const std::vector<ControllerCommands> dr_nodelet_main::launch_medium_test_comman
     {
         ControllerCommands::recover_current,
         ControllerCommands::launch_medium_start,
-        ControllerCommands::Pitch_MV_Zero,
+        //ControllerCommands::Pitch_MV_Zero,
         ControllerCommands::launch_and_home,
-        ControllerCommands::Pitch_Homing,
-        ControllerCommands::Pitch_Homing,
+        //ControllerCommands::Pitch_Homing,
+        //ControllerCommands::Pitch_Homing,
     }
 );
 const std::vector<ControllerCommands> dr_nodelet_main::launch_long_test_commands(
     {
         ControllerCommands::recover_current,
         ControllerCommands::launch_long_start,
-        ControllerCommands::Pitch_MV_Zero,
+        //ControllerCommands::Pitch_MV_Zero,
         ControllerCommands::launch_and_home,
-        ControllerCommands::Pitch_Homing,
-        ControllerCommands::Pitch_Homing,
+        //ControllerCommands::Pitch_Homing,
+        //ControllerCommands::Pitch_Homing,
     }
 );
 
@@ -433,14 +445,19 @@ const std::vector<ControllerCommands> dr_nodelet_main::initial_pose(
         //ControllerCommands::set_delay_500ms,
         //ControllerCommands::delay,
         //ControllerCommands::Cyl_Lift_down,
-        //ControllerCommands::set_delay_1s,
-        //ControllerCommands::delay,
-        //ControllerCommands::set_delay_1s,
-        //ControllerCommands::delay,
-        //ControllerCommands::set_delay_1s,
-        //ControllerCommands::delay,
-        ControllerCommands::arm_home,
         ControllerCommands::Pitch_Homing,
+        ControllerCommands::set_delay_1s,
+        ControllerCommands::delay,
+        ControllerCommands::set_delay_1s,
+        ControllerCommands::delay,
+        ControllerCommands::set_delay_1s,
+        ControllerCommands::delay,
+        ControllerCommands::Pitch_MV_avoid_arm,
+        ControllerCommands::set_delay_1s,
+        ControllerCommands::delay,
+        ControllerCommands::set_delay_1s,
+        ControllerCommands::delay,
+        ControllerCommands::arm_home,
         //ControllerCommands::set_delay_1s,
         //ControllerCommands::delay,
     } 
@@ -456,26 +473,26 @@ const std::vector<ControllerCommands> dr_nodelet_main::manual_all(
 const std::vector<ControllerCommands> dr_nodelet_main::SetLaunchPosi_commands(
     {
         ControllerCommands::Cyl_Arm_grab,
+        ControllerCommands::Pitch_Homing,
+        ControllerCommands::set_delay_1s,
+        ControllerCommands::delay,
         ControllerCommands::set_delay_1s,
         ControllerCommands::delay,
         ControllerCommands::recover_position,
         ControllerCommands::ArmRotateToRotStart_Pos,
-        ControllerCommands::Pitch_MV_init,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
         ControllerCommands::Cyl_Arm_release,
-        ControllerCommands::Pitch_MV_launch,
+        ControllerCommands::Pitch_MV_fast_launch,
     }
 );
 
 const std::vector<ControllerCommands> dr_nodelet_main::ArmPickup_commands(
     {
-        ControllerCommands::Pitch_Homing,
+        ControllerCommands::Pitch_MV_avoid_arm,
         ControllerCommands::Cyl_Catch_grab,
         ControllerCommands::Cyl_Arm_release,
-        ControllerCommands::set_delay_500ms,
+        ControllerCommands::set_delay_1s,
+        ControllerCommands::delay,
+        ControllerCommands::set_delay_1s,
         ControllerCommands::delay,
         ControllerCommands::Cyl_Lift_up,
         ControllerCommands::recover_position,
@@ -497,8 +514,8 @@ const std::vector<ControllerCommands> dr_nodelet_main::ArmPickup_commands(
         ControllerCommands::delay,
         ControllerCommands::Cyl_Arm_grab,
         ControllerCommands::Cyl_Lift_down,
-        //ControllerCommands::recover_position,
-        //ControllerCommands::ArmRotateToZeroDeg,
+        ControllerCommands::recover_position,
+        ControllerCommands::ArmRotateToZeroDeg,
         //ControllerCommands::set_delay_500ms,
         //ControllerCommands::delay,
         //ControllerCommands::arm_home,
@@ -633,6 +650,9 @@ void dr_nodelet_main::onInit(void)
     _nh.param("pitchleftpos_2_deg", pitchleftpos_2_deg, 0.0);
     _nh.param("pitchrightpos_1_deg", pitchrightpos_1_deg, 0.0);
     _nh.param("pitchleftpos_1_deg", pitchleftpos_1_deg, 0.0);
+
+    _nh.param("pitchright_avoid_arm_deg", pitchright_avoid_arm_deg, 0.0);
+
     _nh.param("Arrow_Pick_Arm_deg", Arrow_Pick_Arm_deg, 0.0);
     _nh.param("Arrow_Adjust_Arm_deg", Arrow_Adjust_Arm_deg, 0.0);
     _nh.param("Arrow_Pick_Rack_Arm_deg", Arrow_Pick_Rack_Arm_deg, 0.0);
@@ -908,7 +928,7 @@ void dr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
         //    _command_ongoing = true;
         //    _has_loaded = true;
         //}
-        if( (joy->buttons[ButtonRightThumb] == 1.0) && (joy->buttons[ButtonLeftThumb] == 1.0) && _padx == -1){
+        if( (joy->buttons[ButtonRightThumb] == 1.0) && (joy->buttons[ButtonLeftThumb] == 1.0)){
             this->command_list = &ArmPickup_rack_commands;
             _command_ongoing = true;
         }
@@ -985,12 +1005,14 @@ void dr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
             _has_loaded = false;
         }
         
-        if (_righttrigger)
+        if (_righttrigger && (_padx != -1))
         {   
             //this->act_conf_cmd_msg.data = (uint8_t)MotorCommands::recover_velocity;
             //this->ArmCmd_pub.publish(act_conf_cmd_msg);
             //this->arm_vel_msg.data = 2;
             //this->ArmVal_pub.publish(arm_vel_msg);
+            this->homing();
+        }else if(_padx == -1 && _righttrigger){
             this->command_list = &initial_pose;
             _command_ongoing = true;
             _initial_pose_finished = true;
@@ -1356,6 +1378,26 @@ void dr_nodelet_main::control_timer_callback(const ros::TimerEvent &event)
         }
         this->_PitchSet_Right = false;
         this->_PitchSet_Left = false;
+        this->currentCommandIndex++;
+        NODELET_INFO("pitch set");
+    }
+    else if(currentCommand == ControllerCommands::Pitch_MV_fast_launch)
+    {
+        if(this->_LaunchSet_1){
+            this->pitch_right_pos_msg.data = this->pitchrightpos_1_deg;
+        }else if(this->_LaunchSet_2){
+            this->pitch_right_pos_msg.data = this->pitchrightpos_2_deg;
+        }else if(this->_LaunchSet_3){
+            this->pitch_right_pos_msg.data = this->pitchrightpos_3_deg;
+        }
+        this->PitchRightPos_pub.publish(this->pitch_right_pos_msg);
+        this->currentCommandIndex++;
+        NODELET_INFO("pitch set");
+    }
+    else if(currentCommand == ControllerCommands::Pitch_MV_avoid_arm)
+    {
+        this->pitch_right_pos_msg.data = this->pitchright_avoid_arm_deg;
+        this->PitchRightPos_pub.publish(this->pitch_right_pos_msg);
         this->currentCommandIndex++;
         NODELET_INFO("pitch set");
     }
