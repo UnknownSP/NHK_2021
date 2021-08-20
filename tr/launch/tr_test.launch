@@ -80,7 +80,8 @@
       <param name="R_base_pick_1" type="double" value="3.20" />
       <param name="R_base_pick_standby_2" type="double" value="1.75" />
       <param name="R_base_pick_2" type="double" value="2.35" />
-      <param name="R_base_load" type="double" value="0.3" /> 
+      <param name="R_base_load" type="double" value="0.25" />
+      <param name="R_base_startzone" type="double" value="1.5" />
       <param name="R_height_pick" type="double" value="22.5" />
       <param name="R_height_load" type="double" value="17" />
       <param name="R_height_load_standby" type="double" value="38" /> 
@@ -88,7 +89,8 @@
       <param name="L_base_pick_1" type="double" value="-3.20" />
       <param name="L_base_pick_standby_2" type="double" value="-1.75" />
       <param name="L_base_pick_2" type="double" value="-2.35" />
-      <param name="L_base_load" type="double" value="-0.3" />
+      <param name="L_base_load" type="double" value="-0.25" />
+      <param name="L_base_startzone" type="double" value="-1.5" />
       <param name="L_height_pick" type="double" value="-22.5" />
       <param name="L_height_load" type="double" value="-17" />
       <param name="L_height_load_standby" type="double" value="-38" /> 

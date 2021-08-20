@@ -241,6 +241,7 @@ class tr_nodelet_main : public nodelet::Nodelet
     void R_base_move_pick_standby_2_arrow();
     void R_base_move_pick_2_arrow();
     void R_base_move_load_arrow();
+    void R_base_move_startzone();
     void R_height_move_pick_arrow();
     void R_height_move_load_standby_arrow();
     void R_height_move_load_arrow();
@@ -250,6 +251,7 @@ class tr_nodelet_main : public nodelet::Nodelet
     void L_base_move_pick_standby_2_arrow();
     void L_base_move_pick_2_arrow();
     void L_base_move_load_arrow();
+    void L_base_move_startzone();
     void L_height_move_pick_arrow();
     void L_height_move_load_standby_arrow();
     void L_height_move_load_arrow();
@@ -282,6 +284,7 @@ class tr_nodelet_main : public nodelet::Nodelet
     double R_base_pick_standby_2;
     double R_base_pick_2;
     double R_base_load;
+    double R_base_startzone;
     double R_height_pick;
     double R_height_load_standby;
     double R_height_load;
@@ -291,6 +294,7 @@ class tr_nodelet_main : public nodelet::Nodelet
     double L_base_pick_standby_2;
     double L_base_pick_2;
     double L_base_load;
+    double L_base_startzone;
     double L_height_pick;
     double L_height_load_standby;
     double L_height_load;
@@ -501,6 +505,7 @@ void tr_nodelet_main::onInit(){
     _nh.param("R_base_pick_standby_2", this->R_base_pick_standby_2, 0.0);
     _nh.param("R_base_pick_2", this->R_base_pick_2, 0.0);
     _nh.param("R_base_load", this->R_base_load, 0.0);
+    _nh.param("R_base_startzone", this->R_base_startzone, 0.0);
     _nh.param("R_height_pick", this->R_height_pick, 0.0);
     _nh.param("R_height_load_standby", this->R_height_load_standby, 0.0);
     _nh.param("R_height_load", this->R_height_load, 0.0);
@@ -509,6 +514,7 @@ void tr_nodelet_main::onInit(){
     _nh.param("L_base_pick_standby_2", this->L_base_pick_standby_2, 0.0);
     _nh.param("L_base_pick_2", this->L_base_pick_2, 0.0);
     _nh.param("L_base_load", this->L_base_load, 0.0);
+    _nh.param("L_base_startzone", this->L_base_startzone, 0.0);
     _nh.param("L_height_pick", this->L_height_pick, 0.0);
     _nh.param("L_height_load_standby", this->L_height_load_standby, 0.0);
     _nh.param("L_height_load", this->L_height_load, 0.0);
@@ -602,7 +608,8 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
     static bool _Cyl_L_hand_1 = false;
     static bool _Cyl_R_hand_2 = false;
     static bool _Cyl_L_hand_2 = false;
-    static bool _hand_pos_change = false;
+    static bool _R_hand_pos_change = false;
+    static bool _L_hand_pos_change = false;
     static bool _y_enable = false;
     static bool _b_enable = false;
     static bool _a_enable = false;
@@ -636,7 +643,8 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
         _L_loading = false;
         _loaded = false;
         _shooter_pos_load = false;
-        _hand_pos_change = false;
+        _R_hand_pos_change = false;
+        _L_hand_pos_change = false;
         Pick_mode = -1;
         R_load_mode = -1;
         L_load_mode = -1;
@@ -713,7 +721,7 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
             this->command_list = &Shot_and_SetLoadPos_commands;
             _command_ongoing = true;
         }
-        if(_y){            
+        if(_y && _y_enable){            
             if(Pick_mode == 8){
                 Pick_mode = 0;
             }else{
@@ -723,19 +731,23 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
         }else{
             _y_enable = true;
         }
-        if(_a){
-            if(_hand_pos_change){
-                Cyl_R_hand_roll_load();
-                Cyl_L_hand_roll_load();
-                _hand_pos_change = false;
-                _R_hand_1_pick = false;
-                _L_hand_1_pick = false;
-            }else{
-                Cyl_R_hand_roll_pick();
-                Cyl_L_hand_roll_pick();
-                _hand_pos_change = true;
-                _R_hand_1_pick = true;
-                _L_hand_1_pick = true;
+        if(_a && _a_enable){
+            if((joy->buttons[ButtonRightThumb] == 1.0)){
+                if(_L_hand_pos_change){
+                    Cyl_L_hand_roll_load();
+                    _L_hand_pos_change = false;
+                }else{
+                    Cyl_L_hand_roll_pick();
+                    _L_hand_pos_change = true;
+                }
+            }else if((joy->buttons[ButtonLeftThumb] == 1.0)){
+                if(_R_hand_pos_change){
+                    Cyl_R_hand_roll_load();
+                    _R_hand_pos_change = false;
+                }else{
+                    Cyl_R_hand_roll_pick();
+                    _R_hand_pos_change = true;
+                }
             }
             _a_enable = false;
         }else{
@@ -743,7 +755,7 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
         }
         if(_x && _x_enable){
             if(_shooter_pos_load){
-                if(R_load_mode == 2){
+                if(R_load_mode == 1){
                     R_load_mode = 0;
                 }else{
                     R_load_mode++;
@@ -755,7 +767,7 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
         }
         if(_b && _b_enable){
             if(_shooter_pos_load){
-                if(L_load_mode == 2){
+                if(L_load_mode == 1){
                     L_load_mode = 0;
                 }else{
                     L_load_mode++;
@@ -786,7 +798,7 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
             }
             _shooter_pos_load = false;
         }
-        if(!_loaded && _shooter_pos_load && (_x || _b || (joy->buttons[ButtonRightThumb] != 0.0) || (joy->buttons[ButtonLeftThumb] != 0.0))){
+        if(/*!_loaded && */_shooter_pos_load && (_lb || _rb || _x || _b || (joy->buttons[ButtonRightThumb] != 0.0) || (joy->buttons[ButtonLeftThumb] != 0.0))){
             Pick_mode = -1;
             shot_power_adjust = 0.0;
             if(_x){
@@ -805,111 +817,180 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
                 switch (R_load_mode)
                 {
                 case 0:
-                    //Cyl_R_hand_roll_load();
-                    break;
-                case 1:
                     Cyl_base_load();
                     R_base_move_load_arrow();
                     R_height_adjust += joy->buttons[ButtonLeftThumb] * 2;
                     R_height_adjust -= joy->buttons[ButtonRightThumb] * 2;
                     R_height_move_target(this->R_height_load_standby + R_height_adjust);
                     break;
-                case 2:
-                    Cyl_R_hand_1_release();
+                case 1:
                     Cyl_base_pick();
-                    //Cyl_R_hand_roll_pick();
                     R_base_move_pick_standby_1_arrow();
                     R_height_move_pick_arrow();
+                    if(_R_hand_1_pick){
+                        Cyl_R_hand_2_release();
+                    }else{
+                        Cyl_R_hand_1_release();
+                    }
                     R_height_adjust = 0.0;
                     _R_loading = false;
                     _loaded = true;
                     shot_power_adjust = 0.0;
                     break;
                 }
+                if(_lb){
+                    if(_R_hand_1_pick){
+                        if(_Cyl_R_hand_2){
+                            Cyl_R_hand_2_grab();
+                            _Cyl_R_hand_2 = false;
+                        }else{
+                            Cyl_R_hand_2_release();
+                            _Cyl_R_hand_2 = true;
+                        }
+                    }else{
+                        if(_Cyl_R_hand_1){
+                            Cyl_R_hand_1_grab();
+                            _Cyl_R_hand_1 = false;
+                        }else{
+                            Cyl_R_hand_1_release();
+                            _Cyl_R_hand_1 = true;
+                        }
+                    }
+                }
             }
             if(_L_loading){
                 switch (L_load_mode)
                 {
                 case 0:
-                    //Cyl_L_hand_roll_load();
-                    break;
-                case 1:
                     Cyl_base_load();
                     L_base_move_load_arrow();
                     L_height_adjust += joy->buttons[ButtonLeftThumb] * 2;
                     L_height_adjust -= joy->buttons[ButtonRightThumb] * 2;
                     L_height_move_target(this->L_height_load_standby + L_height_adjust);
                     break;
-                case 2:
-                    Cyl_L_hand_1_release();
+                case 1:
                     Cyl_base_pick();
-                    //Cyl_L_hand_roll_pick();
                     L_base_move_pick_standby_1_arrow();
                     L_height_move_pick_arrow();
+                    if(_L_hand_1_pick){
+                        Cyl_L_hand_2_release();
+                    }else{
+                        Cyl_L_hand_1_release();
+                    }
                     L_height_adjust = 0.0;
                     _L_loading = false;
                     _loaded = true;
                     shot_power_adjust = 0.0;
                     break;
                 }
+                if(_rb){
+                    if(_L_hand_1_pick){
+                        if(_Cyl_L_hand_2){
+                            Cyl_L_hand_2_grab();
+                            _Cyl_L_hand_2 = false;
+                        }else{
+                            Cyl_L_hand_2_release();
+                            _Cyl_L_hand_2 = true;
+                        }
+                    }else{
+                        if(_Cyl_L_hand_1){
+                            Cyl_L_hand_1_grab();
+                            _Cyl_L_hand_1 = false;
+                        }else{
+                            Cyl_L_hand_1_release();
+                            _Cyl_L_hand_1 = true;
+                        }
+                    }
+                }
             }
         }
         if(!_R_loading && !_L_loading && (_y)){
             R_load_mode = -1;
             L_load_mode = -1;
-            switch (Pick_mode)
-            {
-            case 0:
-                Cyl_base_pick();
-                Cyl_R_hand_roll_pick();
-                Cyl_L_hand_roll_pick();
-                R_base_move_pick_standby_1_arrow();
-                R_height_move_pick_arrow();
-                L_base_move_pick_standby_1_arrow();
-                L_height_move_pick_arrow();
-                break;
-            
-            case 1:
-                R_base_move_pick_1_arrow();
-                L_base_move_pick_1_arrow();
-                break;
+            if((joy->buttons[ButtonRightThumb] == 1.0) && (joy->buttons[ButtonLeftThumb] == 1.0)){
+                R_base_move_startzone();
+                L_base_move_startzone();
+                Pick_mode = -1;
+            }else{
+                switch (Pick_mode)
+                {
+                case 0:
+                    Cyl_base_pick();
+                    Cyl_R_hand_roll_pick();
+                    Cyl_L_hand_roll_pick();
+                    R_base_move_pick_standby_1_arrow();
+                    R_height_move_pick_arrow();
+                    L_base_move_pick_standby_1_arrow();
+                    L_height_move_pick_arrow();
+                    break;
 
-            case 2:
-                Cyl_R_hand_1_grab();
-                Cyl_L_hand_1_grab();
-                break;
+                case 1:
+                    R_base_move_pick_1_arrow();
+                    L_base_move_pick_1_arrow();
 
-            case 3:
-                R_height_move_load_standby_arrow();
-                L_height_move_load_standby_arrow();
-                break;
+                    //----------
+                    R_height_move_pick_arrow();
+                    L_height_move_pick_arrow();
+                    //----------
+                    break;
 
-            case 4:
-                Cyl_R_hand_roll_load();
-                Cyl_L_hand_roll_load();
-                break;
-            
-            case 5:
-                R_height_move_pick_arrow();
-                L_height_move_pick_arrow();
-                R_base_move_pick_standby_2_arrow();
-                L_base_move_pick_standby_2_arrow();
-                break;
+                case 2:
+                    Cyl_R_hand_1_grab();
+                    Cyl_L_hand_1_grab();
 
-            case 6:
-                R_base_move_pick_2_arrow();
-                L_base_move_pick_2_arrow();
-                break;
+                    //----------
+                    R_height_move_pick_arrow();
+                    L_height_move_pick_arrow();
+                    //----------
+                    break;
 
-            case 7:
-                Cyl_R_hand_2_grab();
-                Cyl_L_hand_2_grab();
-                break;
+                case 3:
+                    R_height_move_load_standby_arrow();
+                    L_height_move_load_standby_arrow();
+                    break;
 
-            case 8:
-                R_height_move_load_standby_arrow();
-                L_height_move_load_standby_arrow();
-                break;
+                case 4:
+                    Cyl_R_hand_roll_load();
+                    Cyl_L_hand_roll_load();
+
+                    //----------
+                    R_height_move_load_standby_arrow();
+                    L_height_move_load_standby_arrow();
+                    //----------
+                    break;
+
+                case 5:
+                    R_height_move_pick_arrow();
+                    L_height_move_pick_arrow();
+                    R_base_move_pick_standby_2_arrow();
+                    L_base_move_pick_standby_2_arrow();
+                    break;
+
+                case 6:
+                    R_base_move_pick_2_arrow();
+                    L_base_move_pick_2_arrow();
+
+                    //----------
+                    R_height_move_pick_arrow();
+                    L_height_move_pick_arrow();
+                    //----------
+                    break;
+
+                case 7:
+                    Cyl_R_hand_2_grab();
+                    Cyl_L_hand_2_grab();
+
+                    //----------
+                    R_height_move_pick_arrow();
+                    L_height_move_pick_arrow();
+                    //----------
+                    break;
+
+                case 8:
+                    R_height_move_load_standby_arrow();
+                    L_height_move_load_standby_arrow();
+                    break;
+                }
             }
         }
         //------------------------------------------------------------
@@ -1089,9 +1170,9 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
         //}
 
         if(joy->buttons[ButtonLeftThumb] >= 1.0){
-            this->cmd_vel_msg.linear.x = -vel_x * 0.5;
-            this->cmd_vel_msg.linear.y = -vel_y * 0.5;
-            this->cmd_vel_msg.angular.z = -vel_yaw * 0.5;
+            this->cmd_vel_msg.linear.x = -vel_x * 0.25;
+            this->cmd_vel_msg.linear.y = -vel_y * 0.25;
+            this->cmd_vel_msg.angular.z = -vel_yaw * 0.25;
         }else if(joy->buttons[ButtonRightThumb] >= 1.0){
             this->cmd_vel_msg.linear.x = -vel_x * 5;
             this->cmd_vel_msg.linear.y = -vel_y * 5;
@@ -1260,6 +1341,11 @@ void tr_nodelet_main::R_base_move_load_arrow(void){
     this->Pick_R_Base_Pos_pub.publish(this->Pick_R_base_pos_msg);
 }
 
+void tr_nodelet_main::R_base_move_startzone(void){
+    this->Pick_R_base_pos_msg.data = this->R_base_startzone;
+    this->Pick_R_Base_Pos_pub.publish(this->Pick_R_base_pos_msg);
+}
+
 void tr_nodelet_main::R_height_move_pick_arrow(void){
     this->Pick_R_height_pos_msg.data = this->R_height_pick;
     this->Pick_R_Height_Pos_pub.publish(this->Pick_R_height_pos_msg);
@@ -1302,6 +1388,11 @@ void tr_nodelet_main::L_base_move_pick_2_arrow(void){
 
 void tr_nodelet_main::L_base_move_load_arrow(void){
     this->Pick_L_base_pos_msg.data = this->L_base_load;
+    this->Pick_L_Base_Pos_pub.publish(this->Pick_L_base_pos_msg);
+}
+
+void tr_nodelet_main::L_base_move_startzone(void){
+    this->Pick_L_base_pos_msg.data = this->L_base_startzone;
     this->Pick_L_Base_Pos_pub.publish(this->Pick_L_base_pos_msg);
 }
 
@@ -1421,24 +1512,28 @@ void tr_nodelet_main::Cyl_R_hand_roll_pick(void){
     this->lastSolenoid_2_Order &= ~(uint8_t)SolenoidValveCommands::R_hand_roll_cmd;
     this->solenoid2_order_msg.data = this->lastSolenoid_2_Order;
     this->Solenoid2_Order_pub.publish(this->solenoid2_order_msg);
+    this->_R_hand_1_pick = true;
 }
 
 void tr_nodelet_main::Cyl_R_hand_roll_load(void){
     this->lastSolenoid_2_Order |= (uint8_t)SolenoidValveCommands::R_hand_roll_cmd;
     this->solenoid2_order_msg.data = this->lastSolenoid_2_Order;
     this->Solenoid2_Order_pub.publish(this->solenoid2_order_msg);
+    this->_R_hand_1_pick = false;
 }
 
 void tr_nodelet_main::Cyl_L_hand_roll_pick(void){
     this->lastSolenoid_2_Order &= ~(uint8_t)SolenoidValveCommands::L_hand_roll_cmd;
     this->solenoid2_order_msg.data = this->lastSolenoid_2_Order;
     this->Solenoid2_Order_pub.publish(this->solenoid2_order_msg);
+    this->_L_hand_1_pick = true;
 }
 
 void tr_nodelet_main::Cyl_L_hand_roll_load(void){
     this->lastSolenoid_2_Order |= (uint8_t)SolenoidValveCommands::L_hand_roll_cmd;
     this->solenoid2_order_msg.data = this->lastSolenoid_2_Order;
     this->Solenoid2_Order_pub.publish(this->solenoid2_order_msg);
+    this->_L_hand_1_pick = false;
 }
 
 void tr_nodelet_main::delay_start(double delay_s)
