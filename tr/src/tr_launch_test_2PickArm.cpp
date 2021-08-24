@@ -310,6 +310,15 @@ class tr_nodelet_main : public nodelet::Nodelet
     double shot_angle_launch_pos_3;
     double shot_angle_launch_pos_4;
 
+    double shot_power_launch_pos_1_wall;
+    double shot_power_launch_pos_2_wall;
+    double shot_power_launch_pos_3_wall;
+    double shot_power_launch_pos_4_wall;
+    double shot_angle_launch_pos_1_wall;
+    double shot_angle_launch_pos_2_wall;
+    double shot_angle_launch_pos_3_wall;
+    double shot_angle_launch_pos_4_wall;
+
     int Pick_mode = -1;
     int R_load_mode = -1;
     int L_load_mode = -1;
@@ -528,6 +537,15 @@ void tr_nodelet_main::onInit(){
     _nh.param("shot_angle_launch_pos_2", this->shot_angle_launch_pos_2, 0.0);
     _nh.param("shot_angle_launch_pos_3", this->shot_angle_launch_pos_3, 0.0);
     _nh.param("shot_angle_launch_pos_4", this->shot_angle_launch_pos_4, 0.0);
+
+    _nh.param("shot_power_launch_pos_1_wall", this->shot_power_launch_pos_1_wall, 0.0);
+    _nh.param("shot_power_launch_pos_2_wall", this->shot_power_launch_pos_2_wall, 0.0);
+    _nh.param("shot_power_launch_pos_3_wall", this->shot_power_launch_pos_3_wall, 0.0);
+    _nh.param("shot_power_launch_pos_4_wall", this->shot_power_launch_pos_4_wall, 0.0);
+    _nh.param("shot_angle_launch_pos_1_wall", this->shot_angle_launch_pos_1_wall, 0.0);
+    _nh.param("shot_angle_launch_pos_2_wall", this->shot_angle_launch_pos_2_wall, 0.0);
+    _nh.param("shot_angle_launch_pos_3_wall", this->shot_angle_launch_pos_3_wall, 0.0);
+    _nh.param("shot_angle_launch_pos_4_wall", this->shot_angle_launch_pos_4_wall, 0.0);
 
   	// related to grab and load the arrow 
     //_nh.param("roll_arm_radian", this->ArmRollRadian, 0.0);
@@ -778,40 +796,54 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
             _b_enable = true;
         }
         if(_loaded && !_R_loading && !_L_loading ){
-            shot_power_adjust += joy->buttons[ButtonLeftThumb] * 2;
-            shot_power_adjust -= joy->buttons[ButtonRightThumb] * 2;
-            if(_pady == 1){
-                Shot_Power_move_target(shot_power_launch_pos_1 + shot_power_adjust);
+            //shot_power_adjust += joy->buttons[ButtonLeftThumb] * 2;
+            //shot_power_adjust -= joy->buttons[ButtonRightThumb] * 2;
+            if(_pady == 1 && (joy->buttons[ButtonRightThumb] == 0.0) && (joy->buttons[ButtonLeftThumb] == 0.0)){
+                Shot_Power_move_target(shot_power_launch_pos_1 /*+ shot_power_adjust*/);
                 Shot_Angle_move_target(shot_angle_launch_pos_1);
+            }else if(_pady == 1 && (joy->buttons[ButtonRightThumb] == 1.0) && (joy->buttons[ButtonLeftThumb] == 1.0)){
+                Shot_Power_move_target(shot_power_launch_pos_1_wall);
+                Shot_Angle_move_target(shot_angle_launch_pos_1_wall);
             }
-            if(_padx == 1){
-                Shot_Power_move_target(shot_power_launch_pos_2 + shot_power_adjust);
+            if(_padx == 1 && (joy->buttons[ButtonRightThumb] == 0.0) && (joy->buttons[ButtonLeftThumb] == 0.0)){
+                Shot_Power_move_target(shot_power_launch_pos_2 /*+ shot_power_adjust*/);
                 Shot_Angle_move_target(shot_angle_launch_pos_2);
+            }else if(_padx == 1 && (joy->buttons[ButtonRightThumb] == 1.0) && (joy->buttons[ButtonLeftThumb] == 1.0)){
+                Shot_Power_move_target(shot_power_launch_pos_2_wall);
+                Shot_Angle_move_target(shot_angle_launch_pos_2_wall);
             }
-            if(_padx == -1){
-                Shot_Power_move_target(shot_power_launch_pos_3 + shot_power_adjust);
+            if(_padx == -1 && (joy->buttons[ButtonRightThumb] == 0.0) && (joy->buttons[ButtonLeftThumb] == 0.0)){
+                Shot_Power_move_target(shot_power_launch_pos_3 /*+ shot_power_adjust*/);
                 Shot_Angle_move_target(shot_angle_launch_pos_3);
+            }else if(_padx == -1 && (joy->buttons[ButtonRightThumb] == 1.0) && (joy->buttons[ButtonLeftThumb] == 1.0)){
+                Shot_Power_move_target(shot_power_launch_pos_3_wall);
+                Shot_Angle_move_target(shot_angle_launch_pos_3_wall);
             }
-            if(_pady == -1){
-                Shot_Power_move_target(shot_power_launch_pos_4 + shot_power_adjust);
+            if(_pady == -1 && (joy->buttons[ButtonRightThumb] == 0.0) && (joy->buttons[ButtonLeftThumb] == 0.0)){
+                Shot_Power_move_target(shot_power_launch_pos_4 /*+ shot_power_adjust*/);
                 Shot_Angle_move_target(shot_angle_launch_pos_4);
+            }else if(_pady == -1 && (joy->buttons[ButtonRightThumb] == 1.0) && (joy->buttons[ButtonLeftThumb] == 1.0)){
+                Shot_Power_move_target(shot_power_launch_pos_4_wall);
+                Shot_Angle_move_target(shot_angle_launch_pos_4_wall);
             }
             _shooter_pos_load = false;
         }
-        if(/*!_loaded && */_shooter_pos_load && (_lb || _rb || _x || _b || (joy->buttons[ButtonRightThumb] != 0.0) || (joy->buttons[ButtonLeftThumb] != 0.0))){
-            Pick_mode = -1;
-            shot_power_adjust = 0.0;
+        if(!_loaded && _shooter_pos_load && (_lb || _rb || _x || _b || (joy->buttons[ButtonRightThumb] != 0.0) || (joy->buttons[ButtonLeftThumb] != 0.0))){
             if(_x){
                 if(!_L_loading){
                     _R_loading = true;
                 }
                 R_height_adjust = 0.0;
+                Pick_mode = -1;
+                shot_power_adjust = 0.0;
             }
             if(_b){
                 if(!_R_loading){
                     _L_loading = true;
                 }
                 L_height_adjust = 0.0;
+                Pick_mode = -1;
+                shot_power_adjust = 0.0;
             }
             if(_R_loading){
                 switch (R_load_mode)
@@ -825,7 +857,7 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
                     break;
                 case 1:
                     Cyl_base_pick();
-                    R_base_move_pick_standby_1_arrow();
+                    R_base_move_pick_1_arrow();
                     R_height_move_pick_arrow();
                     if(_R_hand_1_pick){
                         Cyl_R_hand_2_release();
@@ -870,7 +902,7 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
                     break;
                 case 1:
                     Cyl_base_pick();
-                    L_base_move_pick_standby_1_arrow();
+                    L_base_move_pick_1_arrow();
                     L_height_move_pick_arrow();
                     if(_L_hand_1_pick){
                         Cyl_L_hand_2_release();

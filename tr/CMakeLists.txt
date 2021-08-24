@@ -124,7 +124,7 @@ include_directories(
 
 ## Declare a C++ library
 add_library(${PROJECT_NAME}
-   src/tr_launch_test.cpp
+   src/tr_launch_test_5PickArm.cpp
  )
 
 ## Add cmake target dependencies of the library
