@@ -252,8 +252,10 @@ class tr_nodelet_main : public nodelet::Nodelet
     void Cyl_hand_4_release();
     void Cyl_hand_5_grab();
     void Cyl_hand_5_release();
-    void Cyl_rotate_hands_pick();
-    void Cyl_rotate_hands_load();
+    void Cyl_rotate_hands_push_on();
+    void Cyl_rotate_hands_pull_on();
+    void Cyl_rotate_hands_push_off();
+    void Cyl_rotate_hands_pull_off();
     
     void Cyl_shooter_grab();
     void Cyl_shooter_release();
@@ -971,136 +973,6 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
         }
         //------------------------------------------------------------
 
-        /*
-        if(_padx == -1){
-            Shot_Angle_move_initial();
-        }else if(_padx == 1){
-            Shot_Angle_move_target(100.0);
-        }
-        if(_pady == 1){
-            //shooter_pull_length += 0.1;
-            //this->shot_power_pos_msg.data = shooter_pull_length;
-            //this->Shot_Power_Pos_pub.publish(this->shot_power_pos_msg);
-            act_conf_cmd_msg.data = (uint8_t)MotorCommands::shutdown_cmd;
-            Pick_R_hand_1_cmd_pub.publish(act_conf_cmd_msg);
-            Shot_Power_move_shooterinit();
-        }else if(_pady == -1){
-            act_conf_cmd_msg.data = (uint8_t)MotorCommands::shutdown_cmd;
-            Pick_R_hand_1_cmd_pub.publish(act_conf_cmd_msg);
-            Shot_Power_move_target(-10);
-        }
-        if(_lefttrigger && _lefttrigger_enable){
-            if(_Cyl_shooter){
-                Cyl_shooter_grab();
-                _Cyl_shooter = false;
-            }else{
-                Cyl_shooter_release();
-                _Cyl_shooter = true;
-            }
-            _lefttrigger_enable = false;
-        }else{
-            _lefttrigger_enable = true;
-        }
-        if(_lb && _lb_enable){
-            if(_Cyl_R_hand_1){
-                Cyl_R_hand_1_grab();
-                _Cyl_R_hand_1 = false;
-            }else{
-                Cyl_R_hand_1_release();
-                _Cyl_R_hand_1 = true;
-            }
-            _lb_enable = false;
-        }else{
-            _lb_enable = true;
-        }
-        if(_rb && _lb){
-            Pick_R_Hand_Homing();
-        }
-        if(_rb){
-            R_height_move_load_arrow();
-        }
-        if(_x){
-            R_base_move_pick_1_arrow();
-            R_height_move_load_standby_arrow();
-            R_hand_move_pick_arrow();
-        }
-        if(_b){
-            //Pick_R_Height_Homing();
-            //Pick_R_Base_Homing();
-            //Shot_Angle_Homing();
-            //Shot_Power_Homing();
-            Cyl_R_hand_1_release();
-            Cyl_base_pick();
-            R_base_move_pick_standby_1_arrow();
-            R_height_move_pick_arrow();
-            R_hand_move_pick_arrow();
-        }
-        if(_righttrigger){
-            Pick_R_Hand_Homing();
-            Pick_R_Base_Homing();
-            Pick_R_Height_Homing();
-            Shot_Angle_Homing();
-            Shot_Power_Homing();
-            //this->Pick_R_hand_pos_msg.data = -4.65;
-            //this->Pick_R_Hand_Pos_pub.publish(this->Pick_R_hand_pos_msg);
-            //R_base_move_load_arrow();
-            //R_height_move_load_arrow();
-            //R_hand_move_load_arrow();
-        }
-        if(_y){
-            //Pick_R_Base_Homing();
-            Cyl_base_load();
-            R_base_move_load_arrow();
-            R_height_move_load_standby_arrow();
-            R_hand_move_load_arrow();
-            //this->shot_angle_pos_msg.data = 100.0;
-            //this->Shot_Angle_Pos_pub.publish(this->shot_angle_pos_msg);
-            //R_hand_move_pick_arrow();
-            //R_height_move_pick_arrow();
-            //R_base_move_pick_1_arrow();
-            //this->Pick_R_height_pos_msg.data = 38;
-            //this->Pick_R_Height_Pos_pub.publish(this->Pick_R_height_pos_msg);
-            //this->Pick_R_base_pos_msg.data = 3.0;
-            //this->Pick_R_Base_Pos_pub.publish(this->Pick_R_base_pos_msg);
-            //this->shot_angle_pos_msg.data = 1.0;
-            //this->Shot_Angle_Pos_pub.publish(this->shot_angle_pos_msg);
-            //this->shot_power_pos_msg.data = -10.0;
-            //this->Shot_Power_Pos_pub.publish(this->shot_power_pos_msg);
-        }
-        if(_a){
-            R_base_move_pick_1_arrow();
-            R_height_move_pick_arrow();
-            R_hand_move_pick_arrow();
-            //R_height_move_load_standby_arrow();
-            //R_base_move_pick_standby_1_arrow();
-            //Cyl_shooter_grab();
-        }else{
-            //Cyl_shooter_release();
-        }
-        */
-
-        //if(!this->_has_loaded)
-        //{
-        //    if (_y)
-        //    {
-        //        this->command_list = &load_test_commands;
-        //        _command_ongoing = true;
-        //        _has_loaded = true;
-        //    }
-        //}   
-        //else if (_a&&(_pady == 1))
-        //{      
-        //    this->command_list = &launch_long_test_commands;
-        //    _command_ongoing = true;
-        //    _has_loaded = false;
-        //}
-        //
-        //if (_righttrigger)
-        //{
-        //    this->command_list = &initial_pose;
-        //    _command_ongoing = true;
-        //    _initial_pose_finished = true;
-        //}
     }
 
 
@@ -1108,8 +980,6 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
     {
         double vel_x = joy->axes[AxisLeftThumbX];   
         double vel_y = joy->axes[AxisLeftThumbY];
-        //double vel_yaw_l = (joy->buttons[ButtonLeftThumb] - 1.0) * (1.0 - 0.0) / (- 1.0 - 1.0) + 0.0;
-        //double vel_yaw_r = (joy->buttons[ButtonRightThumb] - 1.0) * (- 1.0 - 0.0) / (- 1.0 - 1.0) + 0.0;
         double vel_yaw = joy->axes[AxisRightThumbX];//vel_yaw_l + vel_yaw_r;
         double vel_norm = hypot(vel_x, vel_y);
 
@@ -1119,31 +989,6 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
             vel_x /= vel_norm;
             vel_y /= vel_norm;
         }
-
-        //if (_x && !last_x)
-        //{
-        //    
-        //    if ((((this->lastSolenoid_1_Order) >> (4)) & 1) == 1)
-        //    {
-        //        
-        //        this->grab_arrow();
-        //        std::this_thread::sleep_for(std::chrono::milliseconds(400));
-        //        this->adjust_arm_to_lift();
-        //        NODELET_INFO("release_arrow");
-        //    }
-        //    else{
-        //        this->adjust_arm_to_grab();
-        //        std::this_thread::sleep_for(std::chrono::milliseconds(750));
-        //        this->release_arrow();
-        //        NODELET_INFO("grab_arrow");
-        //    }
-        //    
-        //}
-        //if (_b && !last_b)
-        //{            
-        //        this->adjust_arm_to_set();
-        //        NODELET_INFO("homing");
-        //}
 
         if(joy->buttons[ButtonLeftThumb] >= 1.0){
             this->cmd_vel_msg.linear.x = -vel_x * 0.25;
@@ -1165,21 +1010,6 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
     last_x = _x;
     last_y = _y;  
 }
-
-
-
-//void tr_nodelet_main::launcher_move(float movelength){
-   //double init_radian = movelength*2*pi/(this->toothperrotate*this->lengthperbit); 
-   //this->shot_power_pos_msg.data = init_radian;
-   //this->Shot_Power_Pos_pub.publish(this->shot_power_pos_msg);
-//}
-
-//void tr_nodelet_main::adjust_launcher_radian(float launchangle){
-   // calculate the launch angle from the law of cosines
-   //float conf_angle = 2*pi*(this->LaunchPartLength*(sqrtf32(pow((this->PropLength/this->LaunchPartLength),2)-pow(sinf32(launchangle),2)))-this->LaunchInitiallength)/this->BallScrewLead;
-   //this->shot_angle_pos_msg.data = conf_angle;
-   //this->Shot_Angle_Pos_pub.publish(this->shot_angle_pos_msg);
-//}
 
 
 void tr_nodelet_main::clear_flags(void){
@@ -1205,10 +1035,7 @@ void tr_nodelet_main::shutdown(void){
     act_conf_cmd_msg.data = (uint8_t)MotorCommands::shutdown_cmd;
     Shot_Power_Cmd_pub.publish(act_conf_cmd_msg);
     Shot_Angle_Cmd_pub.publish(act_conf_cmd_msg);
-    Pick_R_Base_Cmd_pub.publish(act_conf_cmd_msg);
-    Pick_R_Height_Cmd_pub.publish(act_conf_cmd_msg);
-    Pick_L_Base_Cmd_pub.publish(act_conf_cmd_msg);
-    Pick_L_Height_Cmd_pub.publish(act_conf_cmd_msg);
+    Pick_Slide_Cmd_pub.publish(act_conf_cmd_msg);
     act_enable_pub0.publish(act_conf_cmd_msg);
     act_enable_pub1.publish(act_conf_cmd_msg);
     act_enable_pub2.publish(act_conf_cmd_msg);
@@ -1221,10 +1048,7 @@ void tr_nodelet_main::recover(void){
     act_conf_cmd_msg.data = (uint8_t)MotorCommands::recover_cmd;
     Shot_Power_Cmd_pub.publish(act_conf_cmd_msg);
     Shot_Angle_Cmd_pub.publish(act_conf_cmd_msg);
-    Pick_R_Base_Cmd_pub.publish(act_conf_cmd_msg);
-    Pick_R_Height_Cmd_pub.publish(act_conf_cmd_msg);
-    Pick_L_Base_Cmd_pub.publish(act_conf_cmd_msg);
-    Pick_L_Height_Cmd_pub.publish(act_conf_cmd_msg);
+    Pick_Slide_Cmd_pub.publish(act_conf_cmd_msg);
     act_enable_pub0.publish(act_conf_cmd_msg);
     act_enable_pub1.publish(act_conf_cmd_msg);
     act_enable_pub2.publish(act_conf_cmd_msg);
@@ -1264,132 +1088,81 @@ void tr_nodelet_main::Shot_Angle_Homing(void){
     Shot_Angle_Cmd_pub.publish(act_conf_cmd_msg);
 }
 
-void tr_nodelet_main::Pick_R_Base_Homing(void){
+void tr_nodelet_main::Pick_Slide_Homing(void){
     act_conf_cmd_msg.data = (uint8_t)MotorCommands::shutdown_cmd;
-    Pick_R_Base_Cmd_pub.publish(act_conf_cmd_msg);
+    Pick_Slide_Cmd_pub.publish(act_conf_cmd_msg);
     act_conf_cmd_msg.data = (uint8_t)MotorCommands::homing_cmd;
-    Pick_R_Base_Cmd_pub.publish(act_conf_cmd_msg);
+    Pick_Slide_Cmd_pub.publish(act_conf_cmd_msg);
 }
 
-void tr_nodelet_main::Pick_R_Height_Homing(void){
-    act_conf_cmd_msg.data = (uint8_t)MotorCommands::shutdown_cmd;
-    Pick_R_Height_Cmd_pub.publish(act_conf_cmd_msg);
-    act_conf_cmd_msg.data = (uint8_t)MotorCommands::homing_cmd;
-    Pick_R_Height_Cmd_pub.publish(act_conf_cmd_msg);
+void tr_nodelet_main::PickSlide_mv_startzone(void){
+    this->Pick_Slide_pos_msg.data = this->PickSlide_startzone;
+    this->Pick_Slide_Pos_pub.publish(this->Pick_Slide_pos_msg);
 }
 
-void tr_nodelet_main::Pick_L_Base_Homing(void){
-    act_conf_cmd_msg.data = (uint8_t)MotorCommands::shutdown_cmd;
-    Pick_L_Base_Cmd_pub.publish(act_conf_cmd_msg);
-    act_conf_cmd_msg.data = (uint8_t)MotorCommands::homing_cmd;
-    Pick_L_Base_Cmd_pub.publish(act_conf_cmd_msg);
+void tr_nodelet_main::PickSlide_mv_picking(void){
+    this->Pick_Slide_pos_msg.data = this->PickSlide_picking;
+    this->Pick_Slide_Pos_pub.publish(this->Pick_Slide_pos_msg);
 }
 
-void tr_nodelet_main::Pick_L_Height_Homing(void){
-    act_conf_cmd_msg.data = (uint8_t)MotorCommands::shutdown_cmd;
-    Pick_L_Height_Cmd_pub.publish(act_conf_cmd_msg);
-    act_conf_cmd_msg.data = (uint8_t)MotorCommands::homing_cmd;
-    Pick_L_Height_Cmd_pub.publish(act_conf_cmd_msg);
+void tr_nodelet_main::PickSlide_mv_avoidlauncher(void){
+    this->Pick_Slide_pos_msg.data = this->PickSlide_avoidlauncher;
+    this->Pick_Slide_Pos_pub.publish(this->Pick_Slide_pos_msg);
 }
 
-void tr_nodelet_main::R_base_move_pick_standby_1_arrow(void){
-    this->Pick_R_base_pos_msg.data = this->R_base_pick_standby_1;
-    this->Pick_R_Base_Pos_pub.publish(this->Pick_R_base_pos_msg);
+void tr_nodelet_main::PickSlide_mv_1_load(void){
+    this->Pick_Slide_pos_msg.data = this->PickSlide_1_load;
+    this->Pick_Slide_Pos_pub.publish(this->Pick_Slide_pos_msg);
 }
 
-void tr_nodelet_main::R_base_move_pick_1_arrow(void){
-    this->Pick_R_base_pos_msg.data = this->R_base_pick_1;
-    this->Pick_R_Base_Pos_pub.publish(this->Pick_R_base_pos_msg);
+void tr_nodelet_main::PickSlide_mv_1_release(void){
+    this->Pick_Slide_pos_msg.data = this->PickSlide_1_release;
+    this->Pick_Slide_Pos_pub.publish(this->Pick_Slide_pos_msg);
 }
 
-void tr_nodelet_main::R_base_move_pick_standby_2_arrow(void){
-    this->Pick_R_base_pos_msg.data = this->R_base_pick_standby_2;
-    this->Pick_R_Base_Pos_pub.publish(this->Pick_R_base_pos_msg);
+void tr_nodelet_main::PickSlide_mv_2_load(void){
+    this->Pick_Slide_pos_msg.data = this->PickSlide_2_load;
+    this->Pick_Slide_Pos_pub.publish(this->Pick_Slide_pos_msg);
 }
 
-void tr_nodelet_main::R_base_move_pick_2_arrow(void){
-    this->Pick_R_base_pos_msg.data = this->R_base_pick_2;
-    this->Pick_R_Base_Pos_pub.publish(this->Pick_R_base_pos_msg);
+void tr_nodelet_main::PickSlide_mv_2_release(void){
+    this->Pick_Slide_pos_msg.data = this->PickSlide_2_release;
+    this->Pick_Slide_Pos_pub.publish(this->Pick_Slide_pos_msg);
 }
 
-void tr_nodelet_main::R_base_move_load_arrow(void){
-    this->Pick_R_base_pos_msg.data = this->R_base_load;
-    this->Pick_R_Base_Pos_pub.publish(this->Pick_R_base_pos_msg);
+void tr_nodelet_main::PickSlide_mv_3_load(void){
+    this->Pick_Slide_pos_msg.data = this->PickSlide_3_load;
+    this->Pick_Slide_Pos_pub.publish(this->Pick_Slide_pos_msg);
 }
 
-void tr_nodelet_main::R_base_move_startzone(void){
-    this->Pick_R_base_pos_msg.data = this->R_base_startzone;
-    this->Pick_R_Base_Pos_pub.publish(this->Pick_R_base_pos_msg);
+void tr_nodelet_main::PickSlide_mv_3_release(void){
+    this->Pick_Slide_pos_msg.data = this->PickSlide_3_release;
+    this->Pick_Slide_Pos_pub.publish(this->Pick_Slide_pos_msg);
 }
 
-void tr_nodelet_main::R_height_move_pick_arrow(void){
-    this->Pick_R_height_pos_msg.data = this->R_height_pick;
-    this->Pick_R_Height_Pos_pub.publish(this->Pick_R_height_pos_msg);
+void tr_nodelet_main::PickSlide_mv_4_load(void){
+    this->Pick_Slide_pos_msg.data = this->PickSlide_4_load;
+    this->Pick_Slide_Pos_pub.publish(this->Pick_Slide_pos_msg);
 }
 
-void tr_nodelet_main::R_height_move_load_standby_arrow(void){
-    this->Pick_R_height_pos_msg.data = this->R_height_load_standby;
-    this->Pick_R_Height_Pos_pub.publish(this->Pick_R_height_pos_msg);
+void tr_nodelet_main::PickSlide_mv_4_release(void){
+    this->Pick_Slide_pos_msg.data = this->PickSlide_4_release;
+    this->Pick_Slide_Pos_pub.publish(this->Pick_Slide_pos_msg);
 }
 
-void tr_nodelet_main::R_height_move_load_arrow(void){
-    this->Pick_R_height_pos_msg.data = this->R_height_load;
-    this->Pick_R_Height_Pos_pub.publish(this->Pick_R_height_pos_msg);
+void tr_nodelet_main::PickSlide_mv_5_load(void){
+    this->Pick_Slide_pos_msg.data = this->PickSlide_5_load;
+    this->Pick_Slide_Pos_pub.publish(this->Pick_Slide_pos_msg);
 }
 
-void tr_nodelet_main::R_height_move_target(double target){
-    this->Pick_R_height_pos_msg.data = target;
-    this->Pick_R_Height_Pos_pub.publish(this->Pick_R_height_pos_msg);
+void tr_nodelet_main::PickSlide_mv_5_release(void){
+    this->Pick_Slide_pos_msg.data = this->PickSlide_5_release;
+    this->Pick_Slide_Pos_pub.publish(this->Pick_Slide_pos_msg);
 }
 
-void tr_nodelet_main::L_base_move_pick_standby_1_arrow(void){
-    this->Pick_L_base_pos_msg.data = this->L_base_pick_standby_1;
-    this->Pick_L_Base_Pos_pub.publish(this->Pick_L_base_pos_msg);
-}
-
-void tr_nodelet_main::L_base_move_pick_1_arrow(void){
-    this->Pick_L_base_pos_msg.data = this->L_base_pick_1;
-    this->Pick_L_Base_Pos_pub.publish(this->Pick_L_base_pos_msg);
-}
-
-void tr_nodelet_main::L_base_move_pick_standby_2_arrow(void){
-    this->Pick_L_base_pos_msg.data = this->L_base_pick_standby_2;
-    this->Pick_L_Base_Pos_pub.publish(this->Pick_L_base_pos_msg);
-}
-
-void tr_nodelet_main::L_base_move_pick_2_arrow(void){
-    this->Pick_L_base_pos_msg.data = this->L_base_pick_2;
-    this->Pick_L_Base_Pos_pub.publish(this->Pick_L_base_pos_msg);
-}
-
-void tr_nodelet_main::L_base_move_load_arrow(void){
-    this->Pick_L_base_pos_msg.data = this->L_base_load;
-    this->Pick_L_Base_Pos_pub.publish(this->Pick_L_base_pos_msg);
-}
-
-void tr_nodelet_main::L_base_move_startzone(void){
-    this->Pick_L_base_pos_msg.data = this->L_base_startzone;
-    this->Pick_L_Base_Pos_pub.publish(this->Pick_L_base_pos_msg);
-}
-
-void tr_nodelet_main::L_height_move_pick_arrow(void){
-    this->Pick_L_height_pos_msg.data = this->L_height_pick;
-    this->Pick_L_Height_Pos_pub.publish(this->Pick_L_height_pos_msg);
-}
-
-void tr_nodelet_main::L_height_move_load_standby_arrow(void){
-    this->Pick_L_height_pos_msg.data = this->L_height_load_standby;
-    this->Pick_L_Height_Pos_pub.publish(this->Pick_L_height_pos_msg);
-}
-
-void tr_nodelet_main::L_height_move_load_arrow(void){
-    this->Pick_L_height_pos_msg.data = this->L_height_load;
-    this->Pick_L_Height_Pos_pub.publish(this->Pick_L_height_pos_msg);
-}
-
-void tr_nodelet_main::L_height_move_target(double target){
-    this->Pick_L_height_pos_msg.data = target;
-    this->Pick_L_Height_Pos_pub.publish(this->Pick_L_height_pos_msg);
+void tr_nodelet_main::PickSlide_mv_target(double target){
+    this->Pick_Slide_pos_msg.data = target;
+    this->Pick_Slide_Pos_pub.publish(this->Pick_Slide_pos_msg);
 }
 
 void tr_nodelet_main::Shot_Power_move_shooterinit(void){
@@ -1412,104 +1185,94 @@ void tr_nodelet_main::Shot_Angle_move_target(double target){
     this->Shot_Angle_Pos_pub.publish(this->shot_angle_pos_msg);
 }
 
-void tr_nodelet_main::Cyl_base_pick(void){
-    this->lastSolenoid_1_Order &= ~(uint8_t)SolenoidValveCommands::move_base_cmd;
+void tr_nodelet_main::Cyl_hand_1_grab(void){
+    this->lastSolenoid_1_Order &= ~(uint8_t)SolenoidValveCommands::hand_1_cmd;
     this->solenoid1_order_msg.data = this->lastSolenoid_1_Order;
     this->Solenoid1_Order_pub.publish(this->solenoid1_order_msg);
 }
 
-void tr_nodelet_main::Cyl_base_load(void){
-    this->lastSolenoid_1_Order |= (uint8_t)SolenoidValveCommands::move_base_cmd;
+void tr_nodelet_main::Cyl_hand_1_release(void){
+    this->lastSolenoid_1_Order |= (uint8_t)SolenoidValveCommands::hand_1_cmd;
     this->solenoid1_order_msg.data = this->lastSolenoid_1_Order;
     this->Solenoid1_Order_pub.publish(this->solenoid1_order_msg);
 }
 
-void tr_nodelet_main::Cyl_R_hand_1_grab(void){
-    this->lastSolenoid_1_Order |= (uint8_t)SolenoidValveCommands::R_hand_1_cmd;
+void tr_nodelet_main::Cyl_hand_2_grab(void){
+    this->lastSolenoid_1_Order &= ~(uint8_t)SolenoidValveCommands::hand_2_cmd;
     this->solenoid1_order_msg.data = this->lastSolenoid_1_Order;
     this->Solenoid1_Order_pub.publish(this->solenoid1_order_msg);
 }
 
-void tr_nodelet_main::Cyl_R_hand_2_grab(void){
-    this->lastSolenoid_2_Order |= (uint8_t)SolenoidValveCommands::R_hand_2_cmd;
-    this->solenoid2_order_msg.data = this->lastSolenoid_2_Order;
-    this->Solenoid2_Order_pub.publish(this->solenoid2_order_msg);
-}
-
-void tr_nodelet_main::Cyl_R_hand_1_release(void){
-    this->lastSolenoid_1_Order &= ~(uint8_t)SolenoidValveCommands::R_hand_1_cmd;
+void tr_nodelet_main::Cyl_hand_2_release(void){
+    this->lastSolenoid_1_Order |= (uint8_t)SolenoidValveCommands::hand_2_cmd;
     this->solenoid1_order_msg.data = this->lastSolenoid_1_Order;
     this->Solenoid1_Order_pub.publish(this->solenoid1_order_msg);
 }
 
-void tr_nodelet_main::Cyl_R_hand_2_release(void){
-    this->lastSolenoid_2_Order &= ~(uint8_t)SolenoidValveCommands::R_hand_2_cmd;
-    this->solenoid2_order_msg.data = this->lastSolenoid_2_Order;
-    this->Solenoid2_Order_pub.publish(this->solenoid2_order_msg);
-}
-
-void tr_nodelet_main::Cyl_L_hand_1_grab(void){
-    this->lastSolenoid_1_Order |= (uint8_t)SolenoidValveCommands::L_hand_1_cmd;
+void tr_nodelet_main::Cyl_hand_3_grab(void){
+    this->lastSolenoid_1_Order &= ~(uint8_t)SolenoidValveCommands::hand_3_cmd;
     this->solenoid1_order_msg.data = this->lastSolenoid_1_Order;
     this->Solenoid1_Order_pub.publish(this->solenoid1_order_msg);
 }
 
-void tr_nodelet_main::Cyl_L_hand_2_grab(void){
-    this->lastSolenoid_2_Order |= (uint8_t)SolenoidValveCommands::L_hand_2_cmd;
-    this->solenoid2_order_msg.data = this->lastSolenoid_2_Order;
-    this->Solenoid2_Order_pub.publish(this->solenoid2_order_msg);
-}
-
-void tr_nodelet_main::Cyl_L_hand_1_release(void){
-    this->lastSolenoid_1_Order &= ~(uint8_t)SolenoidValveCommands::L_hand_1_cmd;
+void tr_nodelet_main::Cyl_hand_3_release(void){
+    this->lastSolenoid_1_Order |= (uint8_t)SolenoidValveCommands::hand_3_cmd;
     this->solenoid1_order_msg.data = this->lastSolenoid_1_Order;
     this->Solenoid1_Order_pub.publish(this->solenoid1_order_msg);
 }
 
-void tr_nodelet_main::Cyl_L_hand_2_release(void){
-    this->lastSolenoid_2_Order &= ~(uint8_t)SolenoidValveCommands::L_hand_2_cmd;
+void tr_nodelet_main::Cyl_hand_4_grab(void){
+    this->lastSolenoid_2_Order &= ~(uint8_t)SolenoidValveCommands::hand_4_cmd;
     this->solenoid2_order_msg.data = this->lastSolenoid_2_Order;
     this->Solenoid2_Order_pub.publish(this->solenoid2_order_msg);
 }
 
-void tr_nodelet_main::Cyl_shooter_grab(void){
-    this->lastSolenoid_1_Order &= ~(uint8_t)SolenoidValveCommands::shooter_cmd;
-    this->solenoid1_order_msg.data = this->lastSolenoid_1_Order;
-    this->Solenoid1_Order_pub.publish(this->solenoid1_order_msg);
-}
-
-void tr_nodelet_main::Cyl_shooter_release(void){
-    this->lastSolenoid_1_Order |= (uint8_t)SolenoidValveCommands::shooter_cmd;
-    this->solenoid1_order_msg.data = this->lastSolenoid_1_Order;
-    this->Solenoid1_Order_pub.publish(this->solenoid1_order_msg);
-}
-
-void tr_nodelet_main::Cyl_R_hand_roll_pick(void){
-    this->lastSolenoid_2_Order &= ~(uint8_t)SolenoidValveCommands::R_hand_roll_cmd;
+void tr_nodelet_main::Cyl_hand_4_release(void){
+    this->lastSolenoid_2_Order |= (uint8_t)SolenoidValveCommands::hand_4_cmd;
     this->solenoid2_order_msg.data = this->lastSolenoid_2_Order;
     this->Solenoid2_Order_pub.publish(this->solenoid2_order_msg);
-    this->_R_hand_1_pick = true;
 }
 
-void tr_nodelet_main::Cyl_R_hand_roll_load(void){
-    this->lastSolenoid_2_Order |= (uint8_t)SolenoidValveCommands::R_hand_roll_cmd;
+void tr_nodelet_main::Cyl_hand_5_grab(void){
+    this->lastSolenoid_2_Order &= ~(uint8_t)SolenoidValveCommands::hand_5_cmd;
     this->solenoid2_order_msg.data = this->lastSolenoid_2_Order;
     this->Solenoid2_Order_pub.publish(this->solenoid2_order_msg);
-    this->_R_hand_1_pick = false;
 }
 
-void tr_nodelet_main::Cyl_L_hand_roll_pick(void){
-    this->lastSolenoid_2_Order &= ~(uint8_t)SolenoidValveCommands::L_hand_roll_cmd;
+void tr_nodelet_main::Cyl_hand_5_release(void){
+    this->lastSolenoid_2_Order |= (uint8_t)SolenoidValveCommands::hand_5_cmd;
     this->solenoid2_order_msg.data = this->lastSolenoid_2_Order;
     this->Solenoid2_Order_pub.publish(this->solenoid2_order_msg);
-    this->_L_hand_1_pick = true;
 }
 
-void tr_nodelet_main::Cyl_L_hand_roll_load(void){
-    this->lastSolenoid_2_Order |= (uint8_t)SolenoidValveCommands::L_hand_roll_cmd;
+void tr_nodelet_main::Cyl_hand_4_grab(void){
+    this->lastSolenoid_2_Order &= ~(uint8_t)SolenoidValveCommands::hand_4_cmd;
     this->solenoid2_order_msg.data = this->lastSolenoid_2_Order;
     this->Solenoid2_Order_pub.publish(this->solenoid2_order_msg);
-    this->_L_hand_1_pick = false;
+}
+
+void tr_nodelet_main::Cyl_rotate_hands_push_on(void){
+    this->lastSolenoid_2_Order |= (uint8_t)SolenoidValveCommands::rotate_hands_push_cmd;
+    this->solenoid2_order_msg.data = this->lastSolenoid_2_Order;
+    this->Solenoid2_Order_pub.publish(this->solenoid2_order_msg);
+}
+
+void tr_nodelet_main::Cyl_rotate_hands_push_off(void){
+    this->lastSolenoid_2_Order &= ~(uint8_t)SolenoidValveCommands::rotate_hands_push_cmd;
+    this->solenoid2_order_msg.data = this->lastSolenoid_2_Order;
+    this->Solenoid2_Order_pub.publish(this->solenoid2_order_msg);
+}
+
+void tr_nodelet_main::Cyl_rotate_hands_pull_on(void){
+    this->lastSolenoid_2_Order |= (uint8_t)SolenoidValveCommands::rotate_hands_pull_cmd;
+    this->solenoid2_order_msg.data = this->lastSolenoid_2_Order;
+    this->Solenoid2_Order_pub.publish(this->solenoid2_order_msg);
+}
+
+void tr_nodelet_main::Cyl_rotate_hands_pull_off(void){
+    this->lastSolenoid_2_Order &= ~(uint8_t)SolenoidValveCommands::rotate_hands_pull_cmd;
+    this->solenoid2_order_msg.data = this->lastSolenoid_2_Order;
+    this->Solenoid2_Order_pub.publish(this->solenoid2_order_msg);
 }
 
 void tr_nodelet_main::delay_start(double delay_s)
