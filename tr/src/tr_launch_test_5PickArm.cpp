@@ -291,7 +291,9 @@ class tr_nodelet_main : public nodelet::Nodelet
     double shot_angle_launch_pos_3;
     double shot_angle_launch_pos_4;
     double shot_angle_avoid_loader;
+    double shot_angle_avoid_loader_arrow;
     double shot_angle_load_wait;
+    double shot_angle_load;
 
     double shot_power_launch_pos_1_wall;
     double shot_power_launch_pos_2_wall;
@@ -309,6 +311,7 @@ class tr_nodelet_main : public nodelet::Nodelet
 
     bool _loaded = false;
     double Load_Height_adjust = 0.0;
+    double Load_Angle_adjust = 0.0;
 
     bool _shooter_pos_load = false;
 
@@ -496,7 +499,9 @@ void tr_nodelet_main::onInit(){
     _nh.param("shot_angle_launch_pos_3", this->shot_angle_launch_pos_3, 0.0);
     _nh.param("shot_angle_launch_pos_4", this->shot_angle_launch_pos_4, 0.0);
     _nh.param("shot_angle_avoid_loader", this->shot_angle_avoid_loader, 0.0);
+    _nh.param("shot_angle_avoid_loader_arrow", this->shot_angle_avoid_loader_arrow, 0.0);
     _nh.param("shot_angle_load_wait", this->shot_angle_load_wait, 0.0);
+    _nh.param("shot_angle_load", this->shot_angle_load, 0.0);
 
     _nh.param("shot_power_launch_pos_1_wall", this->shot_power_launch_pos_1_wall, 0.0);
     _nh.param("shot_power_launch_pos_2_wall", this->shot_power_launch_pos_2_wall, 0.0);
@@ -755,6 +760,7 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
         if(!_loaded && _shooter_pos_load && (_lb || _rb || _x || (joy->buttons[ButtonRightThumb] != 0.0) || (joy->buttons[ButtonLeftThumb] != 0.0))){
             if(_x){
                 Load_Height_adjust = 0.0;
+                Load_Angle_adjust = 0.0;
                 Pick_mode = -1;
                 shot_power_adjust = 0.0;
                 if(!_loading){
@@ -807,10 +813,17 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
                     Shot_Angle_move_load_wait();
                     break;
                 case 1:
-                    Shot_Angle_move_initial();
+                    //Shot_Angle_move_initial();
                     Load_Height_adjust += joy->buttons[ButtonLeftThumb] * 1;
                     Load_Height_adjust -= joy->buttons[ButtonRightThumb] * 1;
+                    if(_lb){
+                        Load_Angle_adjust += 1;
+                    }
+                    if(_rb){
+                        Load_Angle_adjust -= 1;
+                    }
                     Shot_Power_move_target(this->shot_power_load + Load_Height_adjust);
+                    Shot_Angle_move_target(this->shot_angle_load + Load_Angle_adjust);
                     break;
                 case 2:
                     switch (Load_hand)
@@ -819,7 +832,7 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
                         break;
                     case 1:
                         Cyl_hand_1_release();
-                        PickSlide_mv_1_release();
+                        //PickSlide_mv_1_release();
                         break;
                     case 2:
                         Cyl_hand_2_release();
@@ -840,60 +853,65 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
                     }
                     break;
                 case 3:
-                    Shot_Angle_move_target(this->shot_angle_avoid_loader);
+                    if(Load_hand == 1){
+                        Cyl_rotate_hands_pick();
+                    }else{
+                        Shot_Angle_move_target(this->shot_angle_avoid_loader_arrow);
+                    }
                     break;
                 case 4:
                     PickSlide_mv_avoidlauncher();
                     Load_Height_adjust = 0.0;
+                    Load_Angle_adjust = 0.0;
                     _loading = false;
                     _loaded = true;
                     shot_power_adjust = 0.0;
                     Load_hand = 0;
                     break;
                 }
-                if(_lb){
-                    switch (Load_hand)
-                    {
-                    case 0:
-                        break;
-                    case 1:
-                        Cyl_hand_1_release();
-                        break;
-                    case 2:
-                        Cyl_hand_2_release();
-                        break;
-                    case 3:
-                        Cyl_hand_3_release();
-                        break;
-                    case 4:
-                        Cyl_hand_4_release();
-                        break;
-                    case 5:
-                        Cyl_hand_5_release();
-                        break;
-                    }
-                }else if(_rb){
-                    switch (Load_hand)
-                    {
-                    case 0:
-                        break;
-                    case 1:
-                        Cyl_hand_1_grab();
-                        break;
-                    case 2:
-                        Cyl_hand_2_grab();
-                        break;
-                    case 3:
-                        Cyl_hand_3_grab();
-                        break;
-                    case 4:
-                        Cyl_hand_4_grab();
-                        break;
-                    case 5:
-                        Cyl_hand_5_grab();
-                        break;
-                    }
-                }
+                //if(_lb){
+                //    switch (Load_hand)
+                //    {
+                //    case 0:
+                //        break;
+                //    case 1:
+                //        Cyl_hand_1_release();
+                //        break;
+                //    case 2:
+                //        Cyl_hand_2_release();
+                //        break;
+                //    case 3:
+                //        Cyl_hand_3_release();
+                //        break;
+                //    case 4:
+                //        Cyl_hand_4_release();
+                //        break;
+                //    case 5:
+                //        Cyl_hand_5_release();
+                //        break;
+                //    }
+                //}else if(_rb){
+                //    switch (Load_hand)
+                //    {
+                //    case 0:
+                //        break;
+                //    case 1:
+                //        Cyl_hand_1_grab();
+                //        break;
+                //    case 2:
+                //        Cyl_hand_2_grab();
+                //        break;
+                //    case 3:
+                //        Cyl_hand_3_grab();
+                //        break;
+                //    case 4:
+                //        Cyl_hand_4_grab();
+                //        break;
+                //    case 5:
+                //        Cyl_hand_5_grab();
+                //        break;
+                //    }
+                //}
             }
         }
 

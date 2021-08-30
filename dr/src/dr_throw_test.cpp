@@ -80,6 +80,7 @@ enum class ControllerCommands : uint16_t
     Pitch_MV_fast_launch,
     Pitch_MV_Zero,
     Pitch_MV_avoid_arm,
+    Pitch_recover,
 };
 
 enum class SolenoidValveCommands : uint8_t
@@ -452,6 +453,7 @@ const std::vector<ControllerCommands> dr_nodelet_main::initial_pose(
         ControllerCommands::delay,
         ControllerCommands::set_delay_1s,
         ControllerCommands::delay,
+        ControllerCommands::Pitch_recover,
         ControllerCommands::Pitch_MV_avoid_arm,
         ControllerCommands::set_delay_1s,
         ControllerCommands::delay,
@@ -478,9 +480,16 @@ const std::vector<ControllerCommands> dr_nodelet_main::SetLaunchPosi_commands(
         ControllerCommands::delay,
         ControllerCommands::set_delay_1s,
         ControllerCommands::delay,
+        ControllerCommands::set_delay_1s,
+        ControllerCommands::delay,
+        ControllerCommands::recover_velocity,
+        ControllerCommands::ArmRotateToRotStart_Vel,
         ControllerCommands::recover_position,
         ControllerCommands::ArmRotateToRotStart_Pos,
+        ControllerCommands::set_delay_1s,
+        ControllerCommands::delay,
         ControllerCommands::Cyl_Arm_release,
+        ControllerCommands::Pitch_recover,
         ControllerCommands::Pitch_MV_fast_launch,
     }
 );
@@ -1163,11 +1172,11 @@ void dr_nodelet_main::control_timer_callback(const ros::TimerEvent &event)
         this->arm_vel_msg.data = 2;
         this->ArmVal_pub.publish(arm_vel_msg);
         if(this->_LaunchSet_1){
-            //while(this->throw_position_observed <= 2.85*pi/2);
+            while(this->throw_position_observed <= this->Pos_1_RotStart_deg);
         }else if(this->_LaunchSet_2){
-            //while(this->throw_position_observed <= 2.9*pi/2);
+            while(this->throw_position_observed <= this->Pos_2_RotStart_deg);
         }else if(this->_LaunchSet_3){
-            //while(this->throw_position_observed <= 3.2*pi/2);
+            while(this->throw_position_observed <= this->Pos_3_RotStart_deg);
         }
         this->arm_vel_msg.data = 0;
         this->ArmVal_pub.publish(arm_vel_msg);
@@ -1400,6 +1409,12 @@ void dr_nodelet_main::control_timer_callback(const ros::TimerEvent &event)
         this->PitchRightPos_pub.publish(this->pitch_right_pos_msg);
         this->currentCommandIndex++;
         NODELET_INFO("pitch set");
+    }
+    else if(currentCommand == ControllerCommands::Pitch_recover)
+    {
+        act_conf_cmd_msg.data = (uint8_t)MotorCommands::recover_cmd;
+        PitchRightCmd_pub.publish(act_conf_cmd_msg);
+        this->currentCommandIndex++;
     }
     else if(currentCommand == ControllerCommands::Pitch_Homing)
     {

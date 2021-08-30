@@ -48,7 +48,7 @@
       <remap from="motor4_cmd_val" to="arm_val"/>
     </node>
     <node pkg="nodelet" type="nodelet" name="motor5" args="$(arg nodelet_mode) can_plugins/Md201xNode $(arg manager_name)" >
-      <param name="bid" type="string" value="610"/>
+      <param name="bid" type="string" value="52c"/>
       <remap from="motor5_cmd" to="pitch_right_cmd"/>
       <remap from="motor5_cmd_val" to="pitch_right_cmd_pos"/>
     </node>
@@ -61,26 +61,26 @@
     
     
     <node pkg="nodelet" type="nodelet" name="dr_nodelet_main" args="$(arg nodelet_mode) dr/dr_nodelet_main $(arg manager_name)" >
-      <param name="launch_short_vel" type="double" value="-70" /> 
+      <param name="launch_short_vel" type="double" value="-25" /> 
       <param name="launch_short_pos" type="double" value="0.8" />
       <param name="Pos_1_RotStart_deg" type="double" value="1.46" />
       <param name="Pos_1_RotStop_cur" type="double" value="0" />
 
-    	<param name="launch_medium_vel" type="double" value="-55" />
-    	<param name="launch_medium_pos" type="double" value="1.2" />
+    	<param name="launch_medium_vel" type="double" value="-42" />
+    	<param name="launch_medium_pos" type="double" value="0.8" />
       <param name="Pos_2_RotStart_deg" type="double" value="1.52" />
       <param name="Pos_2_RotStop_cur" type="double" value="0" />
 
       <param name="launch_long_vel" type="double" value="-500" />
     	<param name="launch_long_pos" type="double" value="0.8" />
-      <param name="Pos_3_RotStart_deg" type="double" value="1.72" />
+      <param name="Pos_3_RotStart_deg" type="double" value="1.62" />
       <param name="Pos_3_RotStop_cur" type="double" value="0" />
 
       <param name="pitchright_init_deg" type="double" value="-0.5" />
       <!-- <param name="pitchrightpos_1_deg" type="double" value="-1.95" /> -->
       <!-- <param name="pitchleftpos_1_deg" type="double" value="2.06" /> -->
-      <param name="pitchrightpos_1_deg" type="double" value="-1.55" />
-      <param name="pitchrightpos_2_deg" type="double" value="-1.55" />
+      <param name="pitchrightpos_1_deg" type="double" value="-1.45" />
+      <param name="pitchrightpos_2_deg" type="double" value="-1.45" />
       <param name="pitchrightpos_3_deg" type="double" value="-1.45" />
       
       <param name="pitchright_avoid_arm_deg" type="double" value="-1.8" />

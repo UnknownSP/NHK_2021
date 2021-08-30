@@ -64,18 +64,18 @@
       <param name="PickSlide_startzone" type="double" value="-25" />
       <param name="PickSlide_picking" type="double" value="-20" />
       <param name="PickSlide_avoidlauncher" type="double" value="-22.5" />
-      <param name="PickSlide_1_load" type="double" value="-0.6" />
-      <param name="PickSlide_1_release" type="double" value="-0" />
-      <param name="PickSlide_2_load" type="double" value="-13.0" />
-      <param name="PickSlide_2_release" type="double" value="-12.4" />
-      <param name="PickSlide_3_load" type="double" value="-26.2" />
-      <param name="PickSlide_3_release" type="double" value="-25.6" />
-      <param name="PickSlide_4_load" type="double" value="-39.2" />
-      <param name="PickSlide_4_release" type="double" value="-38.6" />
-      <param name="PickSlide_5_load" type="double" value="-52.6" />
-      <param name="PickSlide_5_release" type="double" value="-52.0" />
+      <param name="PickSlide_1_load" type="double" value="-1.1" />
+      <param name="PickSlide_1_release" type="double" value="-0.5" />
+      <param name="PickSlide_2_load" type="double" value="-13.2" />
+      <param name="PickSlide_2_release" type="double" value="-12.6" />
+      <param name="PickSlide_3_load" type="double" value="-26.6" />
+      <param name="PickSlide_3_release" type="double" value="-26.0" />
+      <param name="PickSlide_4_load" type="double" value="-39.6" />
+      <param name="PickSlide_4_release" type="double" value="-39.0" />
+      <param name="PickSlide_5_load" type="double" value="-52.8" />
+      <param name="PickSlide_5_release" type="double" value="-52.2" />
       <param name="shot_power_shooter_init" type="double" value="-32.6" /> 
-      <param name="shot_power_load" type="double" value="-9" />
+      <param name="shot_power_load" type="double" value="-4" />
       <param name="shot_power_launch_pos_1" type="double" value="-11" /> <!-- weak -->
       <param name="shot_power_launch_pos_2" type="double" value="-7" /> <!--  | -->
       <!--<param name="shot_power_launch_pos_2" type="double" value="-8" />-->
@@ -87,16 +87,28 @@
       <param name="shot_angle_launch_pos_3" type="double" value="235" />  <!--  | -->
       <param name="shot_angle_launch_pos_4" type="double" value="260.0" /> <!-- powerful -->
       <param name="shot_angle_avoid_loader" type="double" value="100.0" />
-      <param name="shot_angle_load_wait" type="double" value="30.0" />
+      <param name="shot_angle_avoid_loader_arrow" type="double" value="35.0" />
+      <param name="shot_angle_load_wait" type="double" value="50.0" />
+      <param name="shot_angle_load" type="double" value="5.0" />
 
-      <param name="shot_power_launch_pos_1_wall" type="double" value="-14.5" /> <!-- weak -->
-      <param name="shot_power_launch_pos_2_wall" type="double" value="-12.3" /> <!--  | -->
-      <param name="shot_power_launch_pos_3_wall" type="double" value="-3.2" />  <!--  | -->
-      <param name="shot_power_launch_pos_4_wall" type="double" value="0.0" /> <!-- powerful -->
-      <param name="shot_angle_launch_pos_1_wall" type="double" value="130" /> <!-- weak -->
+      <!-- <param name="shot_power_launch_pos_1_wall" type="double" value="-14.5" />
+      <param name="shot_power_launch_pos_2_wall" type="double" value="-12.3" />
+      <param name="shot_power_launch_pos_3_wall" type="double" value="-3.2" />
+      <param name="shot_power_launch_pos_4_wall" type="double" value="0.0" />
+      <param name="shot_angle_launch_pos_1_wall" type="double" value="130" /> 
+      <param name="shot_angle_launch_pos_2_wall" type="double" value="220" /> 
+      <param name="shot_angle_launch_pos_3_wall" type="double" value="245" />  
+      <param name="shot_angle_launch_pos_4_wall" type="double" value="235.0" /> -->
+
+      <param name="shot_power_launch_pos_1_wall" type="double" value="-21.0" /> <!-- weak -->
+      <param name="shot_power_launch_pos_2_wall" type="double" value="-14.0" /> <!--  | -->
+      <param name="shot_power_launch_pos_3_wall" type="double" value="-13.5" />  <!--  | -->
+      <param name="shot_power_launch_pos_4_wall" type="double" value="-13.0" /> <!-- powerful -->
+      <param name="shot_angle_launch_pos_1_wall" type="double" value="290" /> <!-- weak -->
       <param name="shot_angle_launch_pos_2_wall" type="double" value="220" /> <!--  | -->
-      <param name="shot_angle_launch_pos_3_wall" type="double" value="245" />  <!--  | -->
-      <param name="shot_angle_launch_pos_4_wall" type="double" value="235.0" /> <!-- powerful -->
+      <param name="shot_angle_launch_pos_3_wall" type="double" value="220" />  <!--  | -->
+      <param name="shot_angle_launch_pos_4_wall" type="double" value="220.0" /> <!-- powerful -->
+    
     </node>
 
 <!--Solenoid_Driver-->  
