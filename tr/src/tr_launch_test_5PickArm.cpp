@@ -295,6 +295,12 @@ class tr_nodelet_main : public nodelet::Nodelet
     double shot_angle_load_wait;
     double shot_angle_load;
 
+    double shot_angle_1_load;
+    double shot_angle_2_load;
+    double shot_angle_3_load;
+    double shot_angle_4_load;
+    double shot_angle_5_load;
+
     double shot_power_launch_pos_1_wall;
     double shot_power_launch_pos_2_wall;
     double shot_power_launch_pos_3_wall;
@@ -502,6 +508,12 @@ void tr_nodelet_main::onInit(){
     _nh.param("shot_angle_avoid_loader_arrow", this->shot_angle_avoid_loader_arrow, 0.0);
     _nh.param("shot_angle_load_wait", this->shot_angle_load_wait, 0.0);
     _nh.param("shot_angle_load", this->shot_angle_load, 0.0);
+
+    _nh.param("shot_angle_1_load", this->shot_angle_1_load, 0.0);
+    _nh.param("shot_angle_2_load", this->shot_angle_2_load, 0.0);
+    _nh.param("shot_angle_3_load", this->shot_angle_3_load, 0.0);
+    _nh.param("shot_angle_4_load", this->shot_angle_4_load, 0.0);
+    _nh.param("shot_angle_5_load", this->shot_angle_5_load, 0.0);
 
     _nh.param("shot_power_launch_pos_1_wall", this->shot_power_launch_pos_1_wall, 0.0);
     _nh.param("shot_power_launch_pos_2_wall", this->shot_power_launch_pos_2_wall, 0.0);
@@ -823,7 +835,26 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
                         Load_Angle_adjust -= 1;
                     }
                     Shot_Power_move_target(this->shot_power_load + Load_Height_adjust);
-                    Shot_Angle_move_target(this->shot_angle_load + Load_Angle_adjust);
+                    switch (Load_hand)
+                    {
+                    case 0:
+                        break;
+                    case 1:
+                        Shot_Angle_move_target(this->shot_angle_1_load + Load_Angle_adjust);
+                        break;
+                    case 2:
+                        Shot_Angle_move_target(this->shot_angle_2_load + Load_Angle_adjust);
+                        break;
+                    case 3:
+                        Shot_Angle_move_target(this->shot_angle_3_load + Load_Angle_adjust);
+                        break;
+                    case 4:
+                        Shot_Angle_move_target(this->shot_angle_4_load + Load_Angle_adjust);
+                        break;
+                    case 5:
+                        Shot_Angle_move_target(this->shot_angle_5_load + Load_Angle_adjust);
+                        break;
+                    }
                     break;
                 case 2:
                     switch (Load_hand)
@@ -832,7 +863,7 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
                         break;
                     case 1:
                         Cyl_hand_1_release();
-                        //PickSlide_mv_1_release();
+                        PickSlide_mv_1_release();
                         break;
                     case 2:
                         Cyl_hand_2_release();
@@ -853,11 +884,7 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
                     }
                     break;
                 case 3:
-                    if(Load_hand == 1){
-                        Cyl_rotate_hands_pick();
-                    }else{
-                        Shot_Angle_move_target(this->shot_angle_avoid_loader_arrow);
-                    }
+                    Shot_Angle_move_target(this->shot_angle_avoid_loader_arrow);
                     break;
                 case 4:
                     PickSlide_mv_avoidlauncher();

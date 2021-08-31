@@ -61,7 +61,7 @@
     
     <node pkg="nodelet" type="nodelet" name="tr_nodelet_main" args="$(arg nodelet_mode) tr/tr_nodelet_main $(arg manager_name)" >
       
-      <param name="PickSlide_startzone" type="double" value="-25" />
+      <!--<param name="PickSlide_startzone" type="double" value="-25" />
       <param name="PickSlide_picking" type="double" value="-20" />
       <param name="PickSlide_avoidlauncher" type="double" value="-22.5" />
       <param name="PickSlide_1_load" type="double" value="-1.1" />
@@ -74,8 +74,30 @@
       <param name="PickSlide_4_release" type="double" value="-39.0" />
       <param name="PickSlide_5_load" type="double" value="-52.8" />
       <param name="PickSlide_5_release" type="double" value="-52.2" />
+      -->
+
+      <param name="PickSlide_startzone" type="double" value="27.6" />
+      <param name="PickSlide_picking" type="double" value="32.6" />
+      <param name="PickSlide_avoidlauncher" type="double" value="32.5" />
+      <param name="PickSlide_1_load" type="double" value="52.1" />
+      <param name="PickSlide_1_release" type="double" value="52.7" />
+      <param name="PickSlide_2_load" type="double" value="39.3" />
+      <param name="PickSlide_2_release" type="double" value="39.9" />
+      <param name="PickSlide_3_load" type="double" value="26.0" />
+      <param name="PickSlide_3_release" type="double" value="26.6" />
+      <param name="PickSlide_4_load" type="double" value="12.9" />
+      <param name="PickSlide_4_release" type="double" value="13.5" />
+      <param name="PickSlide_5_load" type="double" value="0.0" />
+      <param name="PickSlide_5_release" type="double" value="0.6" />
+
+      <param name="shot_angle_1_load" type="double" value="5.0" />
+      <param name="shot_angle_2_load" type="double" value="5.0" />
+      <param name="shot_angle_3_load" type="double" value="5.0" />
+      <param name="shot_angle_4_load" type="double" value="2.0" />
+      <param name="shot_angle_5_load" type="double" value="2.0" />
+
       <param name="shot_power_shooter_init" type="double" value="-32.6" /> 
-      <param name="shot_power_load" type="double" value="-4" />
+      <param name="shot_power_load" type="double" value="-6" />
       <param name="shot_power_launch_pos_1" type="double" value="-11" /> <!-- weak -->
       <param name="shot_power_launch_pos_2" type="double" value="-7" /> <!--  | -->
       <!--<param name="shot_power_launch_pos_2" type="double" value="-8" />-->
@@ -87,7 +109,7 @@
       <param name="shot_angle_launch_pos_3" type="double" value="235" />  <!--  | -->
       <param name="shot_angle_launch_pos_4" type="double" value="260.0" /> <!-- powerful -->
       <param name="shot_angle_avoid_loader" type="double" value="100.0" />
-      <param name="shot_angle_avoid_loader_arrow" type="double" value="35.0" />
+      <param name="shot_angle_avoid_loader_arrow" type="double" value="45.0" />
       <param name="shot_angle_load_wait" type="double" value="50.0" />
       <param name="shot_angle_load" type="double" value="5.0" />
 
