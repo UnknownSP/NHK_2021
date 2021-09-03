@@ -95,11 +95,14 @@ enum class MotorCommands : uint8_t
 {
     shutdown_cmd      = 0x00,
     recover_cmd       = 0x01,
-    
+    homing_shirasu_cmd= 0x02,
+    get_status        = 0x03,
+    recover_current   = 0x04,
+	recover_velocity  = 0x05,
+	recover_position  = 0x06,
     homing_cmd        = 0x10,
     
 };
-
 
 class tr_nodelet_main : public nodelet::Nodelet
   {
@@ -1056,8 +1059,9 @@ void tr_nodelet_main::shutdown(void){
 }
 
 void tr_nodelet_main::recover(void){
-    act_conf_cmd_msg.data = (uint8_t)MotorCommands::recover_cmd;
+    act_conf_cmd_msg.data = (uint8_t)MotorCommands::recover_position;
     Shot_Power_Cmd_pub.publish(act_conf_cmd_msg);
+    act_conf_cmd_msg.data = (uint8_t)MotorCommands::recover_cmd;
     Shot_Angle_Cmd_pub.publish(act_conf_cmd_msg);
     Pick_Slide_Cmd_pub.publish(act_conf_cmd_msg);
     act_enable_pub0.publish(act_conf_cmd_msg);
@@ -1088,7 +1092,7 @@ void tr_nodelet_main::change_OpMode(void){
 void tr_nodelet_main::Shot_Power_Homing(void){
     act_conf_cmd_msg.data = (uint8_t)MotorCommands::shutdown_cmd;
     Shot_Power_Cmd_pub.publish(act_conf_cmd_msg);
-    act_conf_cmd_msg.data = (uint8_t)MotorCommands::homing_cmd;
+    act_conf_cmd_msg.data = (uint8_t)MotorCommands::homing_shirasu_cmd;
     Shot_Power_Cmd_pub.publish(act_conf_cmd_msg);
 }
 

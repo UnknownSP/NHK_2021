@@ -373,9 +373,9 @@ const std::vector<ControllerCommands> dr_nodelet_main::launch_short_test_command
 
 const std::vector<ControllerCommands> dr_nodelet_main::launch_medium_test_commands(
     {
+        //ControllerCommands::Pitch_MV_Zero,
         ControllerCommands::recover_current,
         ControllerCommands::launch_medium_start,
-        //ControllerCommands::Pitch_MV_Zero,
         ControllerCommands::launch_and_home,
         //ControllerCommands::Pitch_Homing,
         //ControllerCommands::Pitch_Homing,
@@ -475,6 +475,8 @@ const std::vector<ControllerCommands> dr_nodelet_main::manual_all(
 const std::vector<ControllerCommands> dr_nodelet_main::SetLaunchPosi_commands(
     {
         ControllerCommands::Cyl_Arm_grab,
+        ControllerCommands::Pitch_Homing,
+        ControllerCommands::Pitch_Homing,
         ControllerCommands::Pitch_Homing,
         ControllerCommands::set_delay_1s,
         ControllerCommands::delay,
@@ -1043,16 +1045,16 @@ void dr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
             vel_y /= vel_norm;
         }
         if(joy->buttons[ButtonLeftThumb] >= 1.0){
-            this->cmd_vel_msg.linear.x = -vel_x * 0.5;
-            this->cmd_vel_msg.linear.y = -vel_y * 0.5;
+            this->cmd_vel_msg.linear.x = vel_x * 0.5;
+            this->cmd_vel_msg.linear.y = vel_y * 0.5;
             this->cmd_vel_msg.angular.z = -vel_yaw * 0.5;
         }else if(joy->buttons[ButtonRightThumb] >= 1.0){
-            this->cmd_vel_msg.linear.x = -vel_x * 5;
-            this->cmd_vel_msg.linear.y = -vel_y * 5;
+            this->cmd_vel_msg.linear.x = vel_x * 5;
+            this->cmd_vel_msg.linear.y = vel_y * 5;
             this->cmd_vel_msg.angular.z = -vel_yaw * 2.5;
         }else{
-            this->cmd_vel_msg.linear.x = -vel_x;
-            this->cmd_vel_msg.linear.y = -vel_y;
+            this->cmd_vel_msg.linear.x = vel_x;
+            this->cmd_vel_msg.linear.y = vel_y;
             this->cmd_vel_msg.angular.z = -vel_yaw;
         }
         this->cmd_vel_pub.publish(this->cmd_vel_msg);
@@ -1172,11 +1174,11 @@ void dr_nodelet_main::control_timer_callback(const ros::TimerEvent &event)
         this->arm_vel_msg.data = 2;
         this->ArmVal_pub.publish(arm_vel_msg);
         if(this->_LaunchSet_1){
-            while(this->throw_position_observed <= this->Pos_1_RotStart_deg);
+            while(this->throw_position_observed <= this->Pos_1_RotStart_deg-0.5);
         }else if(this->_LaunchSet_2){
-            while(this->throw_position_observed <= this->Pos_2_RotStart_deg);
+            while(this->throw_position_observed <= this->Pos_2_RotStart_deg-0.5);
         }else if(this->_LaunchSet_3){
-            while(this->throw_position_observed <= this->Pos_3_RotStart_deg);
+            while(this->throw_position_observed <= this->Pos_3_RotStart_deg-0.5);
         }
         this->arm_vel_msg.data = 0;
         this->ArmVal_pub.publish(arm_vel_msg);
@@ -1321,9 +1323,9 @@ void dr_nodelet_main::control_timer_callback(const ros::TimerEvent &event)
     }
     else if(currentCommand == ControllerCommands::Pitch_MV_Zero)
     {
-        this->pitch_right_pos_msg.data = -0.5;
+        this->pitch_right_pos_msg.data = -0.0;
         this->PitchRightPos_pub.publish(this->pitch_right_pos_msg);
-        this->pitch_left_pos_msg.data = 0.5;
+        this->pitch_left_pos_msg.data = 0.0;
         this->PitchLeftPos_pub.publish(this->pitch_left_pos_msg);
         this->currentCommandIndex++;
         NODELET_INFO("pitch zero");

@@ -62,18 +62,18 @@
     
     <node pkg="nodelet" type="nodelet" name="dr_nodelet_main" args="$(arg nodelet_mode) dr/dr_nodelet_main $(arg manager_name)" >
       <param name="launch_short_vel" type="double" value="-25" /> 
-      <param name="launch_short_pos" type="double" value="0.8" />
-      <param name="Pos_1_RotStart_deg" type="double" value="1.46" />
-      <param name="Pos_1_RotStop_cur" type="double" value="0" />
+      <param name="launch_short_pos" type="double" value="1.0" />
+      <param name="Pos_1_RotStart_deg" type="double" value="1.60" />
+      <param name="Pos_1_RotStop_cur" type="double" value="0.2" />
 
-    	<param name="launch_medium_vel" type="double" value="-42" />
-    	<param name="launch_medium_pos" type="double" value="0.8" />
-      <param name="Pos_2_RotStart_deg" type="double" value="1.52" />
-      <param name="Pos_2_RotStop_cur" type="double" value="0" />
+    	<param name="launch_medium_vel" type="double" value="-43" />
+    	<param name="launch_medium_pos" type="double" value="1.0" />
+      <param name="Pos_2_RotStart_deg" type="double" value="1.6" />
+      <param name="Pos_2_RotStop_cur" type="double" value="0.2" />
 
-      <param name="launch_long_vel" type="double" value="-500" />
-    	<param name="launch_long_pos" type="double" value="0.8" />
-      <param name="Pos_3_RotStart_deg" type="double" value="1.62" />
+      <param name="launch_long_vel" type="double" value="-100" />
+    	<param name="launch_long_pos" type="double" value="1.0" />
+      <param name="Pos_3_RotStart_deg" type="double" value="1.63" />
       <param name="Pos_3_RotStop_cur" type="double" value="0" />
 
       <param name="pitchright_init_deg" type="double" value="-0.5" />
