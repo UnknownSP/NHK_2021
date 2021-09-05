@@ -43,7 +43,7 @@
       <remap from="motor3_cmd_val" to="foot3_cmd_vel"/>
     </node>
     <node pkg="nodelet" type="nodelet" name="motor4" args="$(arg nodelet_mode) can_plugins/Md201xNode $(arg manager_name)" >
-      <param name="bid" type="string" value="700" />
+      <param name="bid" type="string" value="540" />
       <remap from="motor4_cmd" to="Shot_Power_cmd"/>
       <remap from="motor4_cmd_val" to="Shot_Power_cmd_pos"/>
     </node>

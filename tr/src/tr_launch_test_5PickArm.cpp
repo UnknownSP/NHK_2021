@@ -1059,7 +1059,7 @@ void tr_nodelet_main::shutdown(void){
 }
 
 void tr_nodelet_main::recover(void){
-    act_conf_cmd_msg.data = (uint8_t)MotorCommands::recover_position;
+    act_conf_cmd_msg.data = (uint8_t)MotorCommands::recover_cmd;
     Shot_Power_Cmd_pub.publish(act_conf_cmd_msg);
     act_conf_cmd_msg.data = (uint8_t)MotorCommands::recover_cmd;
     Shot_Angle_Cmd_pub.publish(act_conf_cmd_msg);
@@ -1092,7 +1092,7 @@ void tr_nodelet_main::change_OpMode(void){
 void tr_nodelet_main::Shot_Power_Homing(void){
     act_conf_cmd_msg.data = (uint8_t)MotorCommands::shutdown_cmd;
     Shot_Power_Cmd_pub.publish(act_conf_cmd_msg);
-    act_conf_cmd_msg.data = (uint8_t)MotorCommands::homing_shirasu_cmd;
+    act_conf_cmd_msg.data = (uint8_t)MotorCommands::homing_cmd;
     Shot_Power_Cmd_pub.publish(act_conf_cmd_msg);
 }
 
