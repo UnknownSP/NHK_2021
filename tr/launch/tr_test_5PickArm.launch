@@ -97,7 +97,8 @@
       <param name="shot_angle_5_load" type="double" value="8.0" />
 
       <param name="shot_power_shooter_init" type="double" value="-31.6" /> 
-      <param name="shot_power_load" type="double" value="-6" />
+      <param name="shot_power_load" type="double" value="-11" />
+      <param name="shot_power_load_wait" type="double" value="-6" />
 
       <param name="shot_power_launch_pos_1" type="double" value="-2.0" /> <!-- weak -->
       <param name="shot_power_launch_pos_2" type="double" value="-10.5" /> <!--  | -->

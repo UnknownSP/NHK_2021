@@ -59,8 +59,14 @@ enum class ControllerCommands : uint16_t
     shooter_grab,
     shooter_init,
     shooter_move_load,
+    shooter_move_load_wait,
     angle_init,
     angle_load_wait,
+    angle_load,
+    angle_avoid_loader,
+    pick_slide_next_load,
+    pick_slide_release,
+    pick_cyl_release,
 
     riseflag_shooter_pos_load,
     //-------------------------------------------
@@ -285,6 +291,7 @@ class tr_nodelet_main : public nodelet::Nodelet
 
     double shot_power_shooter_init;
     double shot_power_load;
+    double shot_power_load_wait;
     double shot_power_launch_pos_1;
     double shot_power_launch_pos_2;
     double shot_power_launch_pos_3;
@@ -315,6 +322,8 @@ class tr_nodelet_main : public nodelet::Nodelet
 
     int Pick_mode = -1;
     int Load_mode = -1;
+
+    int Load_position = 0;
 
     int Load_hand = 0;
 
@@ -393,6 +402,7 @@ class tr_nodelet_main : public nodelet::Nodelet
     static const std::vector<ControllerCommands> manual_all;
     //------------------------------------------------------------------------
     static const std::vector<ControllerCommands> Shot_and_SetLoadPos_commands;
+    static const std::vector<ControllerCommands> Shot_and_Load_commands;
     //------------------------------------------------------------------------
     const std::vector<ControllerCommands> *command_list;
 };
@@ -459,12 +469,51 @@ const std::vector<ControllerCommands> tr_nodelet_main::Shot_and_SetLoadPos_comma
         ControllerCommands::shooter_grab,
         ControllerCommands::set_delay_250ms,
         ControllerCommands::delay,
-        ControllerCommands::shooter_move_load,
+        ControllerCommands::shooter_move_load_wait,
         ControllerCommands::set_delay_1s,
         ControllerCommands::delay,
         ControllerCommands::set_delay_1s,
         ControllerCommands::delay,
         ControllerCommands::riseflag_shooter_pos_load,
+    }
+);
+
+const std::vector<ControllerCommands> tr_nodelet_main::Shot_and_Load_commands(
+    {
+        ControllerCommands::shooter_release,
+        ControllerCommands::set_delay_250ms,
+        ControllerCommands::delay,
+        ControllerCommands::shooter_init,
+        ControllerCommands::angle_load_wait,
+        ControllerCommands::set_delay_1s,
+        ControllerCommands::delay,
+        ControllerCommands::set_delay_1s,
+        ControllerCommands::delay,
+        ControllerCommands::set_delay_1s,
+        ControllerCommands::delay,
+        ControllerCommands::set_delay_500ms,
+        ControllerCommands::delay,
+        ControllerCommands::shooter_grab,
+        ControllerCommands::set_delay_250ms,
+        ControllerCommands::delay,
+        ControllerCommands::shooter_move_load_wait,
+        ControllerCommands::set_delay_1s,
+        ControllerCommands::delay,
+        ControllerCommands::set_delay_1s,
+        ControllerCommands::delay,
+        ControllerCommands::riseflag_shooter_pos_load,
+        ControllerCommands::angle_load,
+        ControllerCommands::set_delay_1s,
+        ControllerCommands::delay,
+        ControllerCommands::shooter_move_load,
+        ControllerCommands::set_delay_1s,
+        ControllerCommands::delay,
+        ControllerCommands::pick_cyl_release,
+        ControllerCommands::pick_slide_release,
+        ControllerCommands::set_delay_250ms,
+        ControllerCommands::delay,
+        ControllerCommands::angle_avoid_loader,
+        ControllerCommands::pick_slide_next_load,
     }
 );
 
@@ -501,6 +550,7 @@ void tr_nodelet_main::onInit(){
 
     _nh.param("shot_power_shooter_init", this->shot_power_shooter_init, 0.0);
     _nh.param("shot_power_load", this->shot_power_load, 0.0);
+    _nh.param("shot_power_load_wait", this->shot_power_load_wait, 0.0);
     _nh.param("shot_power_launch_pos_1", this->shot_power_launch_pos_1, 0.0);
     _nh.param("shot_power_launch_pos_2", this->shot_power_launch_pos_2, 0.0);
     _nh.param("shot_power_launch_pos_3", this->shot_power_launch_pos_3, 0.0);
@@ -669,11 +719,11 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
             Shot_Angle_Homing();
             Shot_Power_Homing();
         }
-        if(_rb && _lb && !_loading){
+        if(_rb && _lb/* && !_loading*/){
             Cyl_shooter_release();
         }
 
-        if(!_loading && _lefttrigger){
+        if(/*!_loading &&*/ _lefttrigger){
             _loaded = false;
             _shooter_pos_load = false;
             this->command_list = &Shot_and_SetLoadPos_commands;
@@ -693,6 +743,7 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
         }else{
             _y_enable = true;
         }
+        
         if(_a){
             if((joy->buttons[ButtonRightThumb] == 1.0)){
                 if(_Cyl_hand_5){
@@ -774,6 +825,45 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
             _shooter_pos_load = false;
         }
 
+        if(_x){
+            Pick_mode = -1;
+            shot_power_adjust = 0.0;
+            if((joy->buttons[ButtonLeftThumb] == 1.0)){
+                Load_position = 1;
+            }else if(_lb){
+                Load_position = 2;
+            }else if(_rb){
+                Load_position = 4;
+            }else if((joy->buttons[ButtonRightThumb] == 1.0)){
+                Load_position = 5;
+            }else{
+                Load_position = 3;
+            }
+            switch (Load_position)
+            {
+            case 1:
+                PickSlide_mv_1_load();
+                break;
+
+            case 2:
+                PickSlide_mv_2_load();
+                break;
+
+            case 3:
+                PickSlide_mv_3_load();
+                break;
+
+            case 4:
+                PickSlide_mv_4_load();
+                break;
+
+            case 5:
+                PickSlide_mv_5_load();
+                break;
+            }
+        }
+
+        /*
         if(!_loaded && _shooter_pos_load && (_lb || _rb || _x || (joy->buttons[ButtonRightThumb] != 0.0) || (joy->buttons[ButtonLeftThumb] != 0.0))){
             if(_x){
                 Load_Height_adjust = 0.0;
@@ -839,7 +929,7 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
                     if(_rb){
                         Load_Angle_adjust -= 1;
                     }
-                    Shot_Power_move_target(this->shot_power_load + Load_Height_adjust);
+                    Shot_Power_move_target(this->shot_power_load_wait + Load_Height_adjust);
                     switch (Load_hand)
                     {
                     case 0:
@@ -946,8 +1036,9 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
                 //}
             }
         }
+        */
 
-        if(!_loading && (_b)){
+        if(/*!_loading &&*/ (_b)){
             Load_mode = -1;
             if(_b){           
                 if(Pick_mode == 2){
@@ -1410,9 +1501,9 @@ void tr_nodelet_main::control_timer_callback(const ros::TimerEvent &event)
         this->Shot_Power_move_shooterinit();
         this->currentCommandIndex++;
     }
-    else if (currentCommand == ControllerCommands::shooter_move_load)
+    else if (currentCommand == ControllerCommands::shooter_move_load_wait)
     {
-        this->Shot_Power_move_target(this->shot_power_load);
+        this->Shot_Power_move_target(this->shot_power_load_wait);
         this->currentCommandIndex++;
     }
     else if (currentCommand == ControllerCommands::angle_init)
@@ -1423,6 +1514,120 @@ void tr_nodelet_main::control_timer_callback(const ros::TimerEvent &event)
     else if (currentCommand == ControllerCommands::angle_load_wait)
     {
         this->Shot_Angle_move_target(this->shot_angle_load_wait);
+        this->currentCommandIndex++;
+    }
+    else if (currentCommand == ControllerCommands::angle_avoid_loader)
+    {
+        this->Shot_Angle_move_target(this->shot_angle_avoid_loader);
+        this->currentCommandIndex++;
+    }
+    else if (currentCommand == ControllerCommands::angle_load)
+    {
+        switch (Load_position)
+        {
+        case 1:
+            Shot_Angle_move_target(this->shot_angle_1_load);
+            break;
+        
+        case 2:
+            Shot_Angle_move_target(this->shot_angle_2_load);
+            break;
+
+        case 3:
+            Shot_Angle_move_target(this->shot_angle_3_load);
+            break;
+
+        case 4:
+            Shot_Angle_move_target(this->shot_angle_4_load);
+            break;
+
+        case 5:
+            Shot_Angle_move_target(this->shot_angle_5_load);
+            break;
+        }
+        this->currentCommandIndex++;
+    }
+    else if (currentCommand == ControllerCommands::pick_slide_next_load)
+    {
+        if(Load_position==5){
+            Load_position = 1;
+        }else{
+            Load_position++;
+        }
+        switch (Load_position)
+        {
+        case 1:
+            PickSlide_mv_1_load();
+            break;
+        
+        case 2:
+            PickSlide_mv_2_load();
+            break;
+
+        case 3:
+            PickSlide_mv_3_load();
+            break;
+
+        case 4:
+            PickSlide_mv_4_load();
+            break;
+
+        case 5:
+            PickSlide_mv_5_load();
+            break;
+        }
+        this->currentCommandIndex++;
+    }
+    else if (currentCommand == ControllerCommands::pick_slide_release)
+    {
+        switch (Load_position)
+        {
+        case 1:
+            PickSlide_mv_1_release();
+            break;
+        
+        case 2:
+            PickSlide_mv_2_release();
+            break;
+
+        case 3:
+            PickSlide_mv_3_release();
+            break;
+
+        case 4:
+            PickSlide_mv_4_release();
+            break;
+
+        case 5:
+            PickSlide_mv_5_release();
+            break;
+        }
+        this->currentCommandIndex++;
+    }
+    else if (currentCommand == ControllerCommands::pick_cyl_release)
+    {
+        switch (Load_position)
+        {
+        case 1:
+            Cyl_hand_1_release();
+            break;
+        
+        case 2:
+            Cyl_hand_2_release();
+            break;
+
+        case 3:
+            Cyl_hand_3_release();
+            break;
+
+        case 4:
+            Cyl_hand_4_release();
+            break;
+
+        case 5:
+            Cyl_hand_5_release();
+            break;
+        }
         this->currentCommandIndex++;
     }
     else if (currentCommand == ControllerCommands::riseflag_shooter_pos_load)
