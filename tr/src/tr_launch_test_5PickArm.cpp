@@ -454,6 +454,8 @@ const std::vector<ControllerCommands> tr_nodelet_main::Shot_and_SetLoadPos_comma
         ControllerCommands::delay,
         ControllerCommands::set_delay_1s,
         ControllerCommands::delay,
+        ControllerCommands::set_delay_500ms,
+        ControllerCommands::delay,
         ControllerCommands::shooter_grab,
         ControllerCommands::set_delay_250ms,
         ControllerCommands::delay,
