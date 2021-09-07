@@ -365,6 +365,8 @@ private:
     double Pos_3_free_RotStop_cur;
     double Pos_4_free_RotStop_cur;
 
+    double RotStart_cur_adjust;
+
     bool _LaunchSet_1_wall = false;
     bool _LaunchSet_2_wall = false;
     bool _LaunchSet_3_wall = false;
@@ -784,6 +786,8 @@ void dr_nodelet_main::onInit(void)
     _nh.param("Pos_3_free_RotStop_cur", Pos_3_free_RotStop_cur, 0.0);
     _nh.param("Pos_4_free_RotStop_deg", Pos_4_free_RotStop_deg, 0.0);
     _nh.param("Pos_4_free_RotStop_cur", Pos_4_free_RotStop_cur, 0.0);
+
+    _nh.param("RotStart_cur_adjust", RotStart_cur_adjust, 0.0);
     //----------------------------------------
 
     nh.getParam("ButtonA", ButtonA);
@@ -1460,21 +1464,21 @@ void dr_nodelet_main::control_timer_callback(const ros::TimerEvent &event)
     else if(currentCommand == ControllerCommands::launch_start)
     {
         if(_LaunchSet_1_wall){
-            this->arm_vel_msg.data = this->Pos_1_wall_RotStart_cur;
+            this->arm_vel_msg.data = this->Pos_1_wall_RotStart_cur + this->RotStart_cur_adjust;
         }else if(_LaunchSet_2_wall){
-            this->arm_vel_msg.data = this->Pos_2_wall_RotStart_cur;
+            this->arm_vel_msg.data = this->Pos_2_wall_RotStart_cur + this->RotStart_cur_adjust;
         }else if(_LaunchSet_3_wall){
-            this->arm_vel_msg.data = this->Pos_3_wall_RotStart_cur;
+            this->arm_vel_msg.data = this->Pos_3_wall_RotStart_cur + this->RotStart_cur_adjust;
         }else if(_LaunchSet_4_wall){
-            this->arm_vel_msg.data = this->Pos_4_wall_RotStart_cur;
+            this->arm_vel_msg.data = this->Pos_4_wall_RotStart_cur + this->RotStart_cur_adjust;
         }else if(_LaunchSet_5_wall){
-            this->arm_vel_msg.data = this->Pos_5_wall_RotStart_cur;
+            this->arm_vel_msg.data = this->Pos_5_wall_RotStart_cur + this->RotStart_cur_adjust;
         }else if(_LaunchSet_2_free){
-            this->arm_vel_msg.data = this->Pos_2_free_RotStart_cur;
+            this->arm_vel_msg.data = this->Pos_2_free_RotStart_cur + this->RotStart_cur_adjust;
         }else if(_LaunchSet_3_free){
-            this->arm_vel_msg.data = this->Pos_3_free_RotStart_cur;
+            this->arm_vel_msg.data = this->Pos_3_free_RotStart_cur + this->RotStart_cur_adjust;
         }else if(_LaunchSet_4_free){
-            this->arm_vel_msg.data = this->Pos_4_free_RotStart_cur;
+            this->arm_vel_msg.data = this->Pos_4_free_RotStart_cur + this->RotStart_cur_adjust;
         }
         this->ArmVal_pub.publish(arm_vel_msg);
         this->currentCommandIndex++;

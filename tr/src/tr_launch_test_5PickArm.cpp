@@ -65,6 +65,7 @@ enum class ControllerCommands : uint16_t
     angle_load,
     angle_avoid_loader,
     pick_slide_next_load,
+    pick_slide_now_hand,
     pick_slide_release,
     pick_cyl_release,
 
@@ -310,6 +311,7 @@ class tr_nodelet_main : public nodelet::Nodelet
     double shot_angle_3_load;
     double shot_angle_4_load;
     double shot_angle_5_load;
+    double shot_angle_load_adjust;
 
     double shot_power_launch_pos_1_wall;
     double shot_power_launch_pos_2_wall;
@@ -324,6 +326,7 @@ class tr_nodelet_main : public nodelet::Nodelet
     int Load_mode = -1;
 
     int Load_position = 0;
+    bool _load_end = false;
 
     int Load_hand = 0;
 
@@ -487,6 +490,7 @@ const std::vector<ControllerCommands> tr_nodelet_main::Shot_and_Load_commands(
         ControllerCommands::angle_load_wait,
         ControllerCommands::set_delay_1s,
         ControllerCommands::delay,
+        ControllerCommands::pick_slide_now_hand,
         ControllerCommands::set_delay_1s,
         ControllerCommands::delay,
         ControllerCommands::set_delay_1s,
@@ -513,6 +517,8 @@ const std::vector<ControllerCommands> tr_nodelet_main::Shot_and_Load_commands(
         ControllerCommands::set_delay_250ms,
         ControllerCommands::delay,
         ControllerCommands::angle_avoid_loader,
+        ControllerCommands::set_delay_250ms,
+        ControllerCommands::delay,
         ControllerCommands::pick_slide_next_load,
     }
 );
@@ -569,6 +575,7 @@ void tr_nodelet_main::onInit(){
     _nh.param("shot_angle_3_load", this->shot_angle_3_load, 0.0);
     _nh.param("shot_angle_4_load", this->shot_angle_4_load, 0.0);
     _nh.param("shot_angle_5_load", this->shot_angle_5_load, 0.0);
+    _nh.param("shot_angle_load_adjust", this->shot_angle_load_adjust, 0.0);
 
     _nh.param("shot_power_launch_pos_1_wall", this->shot_power_launch_pos_1_wall, 0.0);
     _nh.param("shot_power_launch_pos_2_wall", this->shot_power_launch_pos_2_wall, 0.0);
@@ -684,7 +691,9 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
         Load_mode = -1;
         _loading = false;
         Load_hand = 0;
+        Load_position = 1;
         shot_power_adjust = 0.0;
+        _load_end = false;
     }
     if (_back)
     {
@@ -724,10 +733,19 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
         }
 
         if(/*!_loading &&*/ _lefttrigger){
-            _loaded = false;
-            _shooter_pos_load = false;
-            this->command_list = &Shot_and_SetLoadPos_commands;
-            _command_ongoing = true;
+            if(_load_end){
+                Cyl_shooter_release();
+                Load_position = 1;
+                PickSlide_mv_picking();
+            }else{
+                this->command_list = &Shot_and_Load_commands;
+                _command_ongoing = true;
+                if(Load_position == 5){
+                    _load_end = true;
+                }
+            }
+            //_loaded = false;
+            //_shooter_pos_load = false;
         }
         if(_y){
             if((joy->buttons[ButtonRightThumb] == 1.0) && (joy->buttons[ButtonLeftThumb] == 1.0)){
@@ -743,7 +761,7 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
         }else{
             _y_enable = true;
         }
-        
+
         if(_a){
             if((joy->buttons[ButtonRightThumb] == 1.0)){
                 if(_Cyl_hand_5){
@@ -791,41 +809,42 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
             _a_enable = true;
         }
 
-        if(_loaded && !_loading ){
+        //if(_loaded && !_loading ){
             //shot_power_adjust += joy->buttons[ButtonLeftThumb] * 2;
             //shot_power_adjust -= joy->buttons[ButtonRightThumb] * 2;
-            if(_pady == 1 && (joy->buttons[ButtonRightThumb] == 0.0) && (joy->buttons[ButtonLeftThumb] == 0.0)){
+            if(_pady == 1 && (joy->buttons[ButtonRightThumb] == 1.0) && (joy->buttons[ButtonLeftThumb] == 1.0)){
                 Shot_Power_move_target(shot_power_launch_pos_1 /*+ shot_power_adjust*/);
                 Shot_Angle_move_target(shot_angle_launch_pos_1);
-            }else if(_pady == 1 && (joy->buttons[ButtonRightThumb] == 1.0) && (joy->buttons[ButtonLeftThumb] == 1.0)){
+            }else if(_pady == 1 && (joy->buttons[ButtonRightThumb] == 0.0) && (joy->buttons[ButtonLeftThumb] == 0.0)){
                 Shot_Power_move_target(shot_power_launch_pos_1_wall);
                 Shot_Angle_move_target(shot_angle_launch_pos_1_wall);
             }
-            if(_padx == 1 && (joy->buttons[ButtonRightThumb] == 0.0) && (joy->buttons[ButtonLeftThumb] == 0.0)){
+            if(_padx == 1 && (joy->buttons[ButtonRightThumb] == 1.0) && (joy->buttons[ButtonLeftThumb] == 1.0)){
                 Shot_Power_move_target(shot_power_launch_pos_2 /*+ shot_power_adjust*/);
                 Shot_Angle_move_target(shot_angle_launch_pos_2);
-            }else if(_padx == 1 && (joy->buttons[ButtonRightThumb] == 1.0) && (joy->buttons[ButtonLeftThumb] == 1.0)){
+            }else if(_padx == 1 && (joy->buttons[ButtonRightThumb] == 0.0) && (joy->buttons[ButtonLeftThumb] == 0.0)){
                 Shot_Power_move_target(shot_power_launch_pos_2_wall);
                 Shot_Angle_move_target(shot_angle_launch_pos_2_wall);
             }
-            if(_padx == -1 && (joy->buttons[ButtonRightThumb] == 0.0) && (joy->buttons[ButtonLeftThumb] == 0.0)){
+            if(_padx == -1 && (joy->buttons[ButtonRightThumb] == 1.0) && (joy->buttons[ButtonLeftThumb] == 1.0)){
                 Shot_Power_move_target(shot_power_launch_pos_3 /*+ shot_power_adjust*/);
                 Shot_Angle_move_target(shot_angle_launch_pos_3);
-            }else if(_padx == -1 && (joy->buttons[ButtonRightThumb] == 1.0) && (joy->buttons[ButtonLeftThumb] == 1.0)){
+            }else if(_padx == -1 && (joy->buttons[ButtonRightThumb] == 0.0) && (joy->buttons[ButtonLeftThumb] == 0.0)){
                 Shot_Power_move_target(shot_power_launch_pos_3_wall);
                 Shot_Angle_move_target(shot_angle_launch_pos_3_wall);
             }
-            if(_pady == -1 && (joy->buttons[ButtonRightThumb] == 0.0) && (joy->buttons[ButtonLeftThumb] == 0.0)){
+            if(_pady == -1 && (joy->buttons[ButtonRightThumb] == 1.0) && (joy->buttons[ButtonLeftThumb] == 1.0)){
                 Shot_Power_move_target(shot_power_launch_pos_4 /*+ shot_power_adjust*/);
                 Shot_Angle_move_target(shot_angle_launch_pos_4);
-            }else if(_pady == -1 && (joy->buttons[ButtonRightThumb] == 1.0) && (joy->buttons[ButtonLeftThumb] == 1.0)){
+            }else if(_pady == -1 && (joy->buttons[ButtonRightThumb] == 0.0) && (joy->buttons[ButtonLeftThumb] == 0.0)){
                 Shot_Power_move_target(shot_power_launch_pos_4_wall);
                 Shot_Angle_move_target(shot_angle_launch_pos_4_wall);
             }
-            _shooter_pos_load = false;
-        }
+            //_shooter_pos_load = false;
+        //}
 
         if(_x){
+            _load_end = false;
             Pick_mode = -1;
             shot_power_adjust = 0.0;
             if((joy->buttons[ButtonLeftThumb] == 1.0)){
@@ -1039,9 +1058,10 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
         */
 
         if(/*!_loading &&*/ (_b)){
+            _load_end = false;
             Load_mode = -1;
             if(_b){           
-                if(Pick_mode == 2){
+                if(Pick_mode == 4){
                     Pick_mode = 0;
                 }else{
                     Pick_mode++;
@@ -1054,6 +1074,7 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
             if((joy->buttons[ButtonRightThumb] == 1.0) && (joy->buttons[ButtonLeftThumb] == 1.0)){
                 Cyl_rotate_hands_load();
                 PickSlide_mv_startzone();
+                Load_position = 3;
                 Pick_mode = -1;
             }else{
                 switch (Pick_mode)
@@ -1074,6 +1095,16 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
                 case 2:
                     PickSlide_mv_avoidlauncher();
                     Cyl_rotate_hands_load();
+                    break;
+
+                case 3:
+                    Cyl_rotate_hands_stop();
+                    break;
+
+                case 4:
+                    PickSlide_mv_avoidlauncher();
+                    Cyl_rotate_hands_load();
+                    Load_position = 1;
                     break;
                 }
             }
@@ -1404,12 +1435,12 @@ void tr_nodelet_main::Cyl_rotate_hands_pick(void){
     Cyl_rotate_hands_pull_on();
 }
 
-void tr_nodelet_main::Cyl_rotate_hands_stop(void){
+void tr_nodelet_main::Cyl_rotate_hands_free(void){
     Cyl_rotate_hands_push_on();
     Cyl_rotate_hands_pull_on();
 }
 
-void tr_nodelet_main::Cyl_rotate_hands_free(void){
+void tr_nodelet_main::Cyl_rotate_hands_stop(void){
     Cyl_rotate_hands_push_off();
     Cyl_rotate_hands_pull_off();
 }
@@ -1506,6 +1537,11 @@ void tr_nodelet_main::control_timer_callback(const ros::TimerEvent &event)
         this->Shot_Power_move_target(this->shot_power_load_wait);
         this->currentCommandIndex++;
     }
+    else if (currentCommand == ControllerCommands::shooter_move_load)
+    {
+        this->Shot_Power_move_target(this->shot_power_load);
+        this->currentCommandIndex++;
+    }
     else if (currentCommand == ControllerCommands::angle_init)
     {
         this->Shot_Angle_move_initial();
@@ -1526,23 +1562,23 @@ void tr_nodelet_main::control_timer_callback(const ros::TimerEvent &event)
         switch (Load_position)
         {
         case 1:
-            Shot_Angle_move_target(this->shot_angle_1_load);
+            Shot_Angle_move_target(this->shot_angle_1_load + this->shot_angle_load_adjust);
             break;
         
         case 2:
-            Shot_Angle_move_target(this->shot_angle_2_load);
+            Shot_Angle_move_target(this->shot_angle_2_load + this->shot_angle_load_adjust);
             break;
 
         case 3:
-            Shot_Angle_move_target(this->shot_angle_3_load);
+            Shot_Angle_move_target(this->shot_angle_3_load + this->shot_angle_load_adjust);
             break;
 
         case 4:
-            Shot_Angle_move_target(this->shot_angle_4_load);
+            Shot_Angle_move_target(this->shot_angle_4_load + this->shot_angle_load_adjust);
             break;
 
         case 5:
-            Shot_Angle_move_target(this->shot_angle_5_load);
+            Shot_Angle_move_target(this->shot_angle_5_load + this->shot_angle_load_adjust);
             break;
         }
         this->currentCommandIndex++;
@@ -1554,6 +1590,32 @@ void tr_nodelet_main::control_timer_callback(const ros::TimerEvent &event)
         }else{
             Load_position++;
         }
+        switch (Load_position)
+        {
+        case 1:
+            PickSlide_mv_1_load();
+            break;
+        
+        case 2:
+            PickSlide_mv_2_load();
+            break;
+
+        case 3:
+            PickSlide_mv_3_load();
+            break;
+
+        case 4:
+            PickSlide_mv_4_load();
+            break;
+
+        case 5:
+            PickSlide_mv_5_load();
+            break;
+        }
+        this->currentCommandIndex++;
+    }
+    else if (currentCommand == ControllerCommands::pick_slide_now_hand)
+    {
         switch (Load_position)
         {
         case 1:
