@@ -505,59 +505,75 @@ const std::vector<ControllerCommands> tr_nodelet_main::Shot_and_SetLoadPos_comma
 const std::vector<ControllerCommands> tr_nodelet_main::Shot_and_Load_commands(
     {
         ControllerCommands::shooter_release,
-        ControllerCommands::set_delay_250ms,
+        //
+        ControllerCommands::set_delay_100ms,
         ControllerCommands::delay,
+        //
         ControllerCommands::pick_slide_adjust,
         ControllerCommands::shooter_init,
         ControllerCommands::angle_load_wait,
+        //
         ControllerCommands::set_delay_1s,
         ControllerCommands::delay,
-        //ControllerCommands::pick_cyl_release,
+        ControllerCommands::set_delay_1s,
+        ControllerCommands::delay,
+        ControllerCommands::set_delay_500ms,
+        ControllerCommands::delay,
+        //
+        ControllerCommands::pick_cyl_release,
+        ControllerCommands::set_delay_100ms,
+        ControllerCommands::delay,
+        ControllerCommands::pick_cyl_grab,
+        //
+        ControllerCommands::shooter_grab,
+        //
         //ControllerCommands::set_delay_100ms,
         //ControllerCommands::delay,
-        //ControllerCommands::pick_cyl_grab,
-        //ControllerCommands::pick_slide_now_hand,
+        //
+        ControllerCommands::pick_cyl_release,
+        ControllerCommands::set_delay_100ms,
+        ControllerCommands::delay,
+        ControllerCommands::pick_cyl_grab,
+        //
+        ControllerCommands::pick_slide_now_hand,
+        ControllerCommands::shooter_move_load_wait,
+        //
         ControllerCommands::set_delay_1s,
         ControllerCommands::delay,
         ControllerCommands::set_delay_1s,
+        ControllerCommands::delay,
+        ControllerCommands::set_delay_500ms,
         ControllerCommands::delay,
         ControllerCommands::set_delay_250ms,
         ControllerCommands::delay,
-        ControllerCommands::pick_cyl_release,
-        ControllerCommands::set_delay_100ms,
-        ControllerCommands::delay,
-        ControllerCommands::pick_cyl_grab,
-        ControllerCommands::shooter_grab,
-        ControllerCommands::set_delay_100ms,
-        ControllerCommands::delay,
-        ControllerCommands::pick_cyl_release,
-        ControllerCommands::set_delay_100ms,
-        ControllerCommands::delay,
-        ControllerCommands::pick_cyl_grab,
-        ControllerCommands::pick_slide_now_hand,
-        ControllerCommands::shooter_move_load_wait,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
-        ControllerCommands::riseflag_shooter_pos_load,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
+        //
         ControllerCommands::angle_load,
         ControllerCommands::arrowadjust_grab,
-        ControllerCommands::set_delay_1s,
+        //
+        ControllerCommands::set_delay_500ms,
         ControllerCommands::delay,
+        ControllerCommands::set_delay_250ms,
+        ControllerCommands::delay,
+        //
         ControllerCommands::shooter_move_load,
-        ControllerCommands::set_delay_1s,
+        //
+        ControllerCommands::set_delay_500ms,
         ControllerCommands::delay,
+        ControllerCommands::set_delay_250ms,
+        ControllerCommands::delay,
+        //
         ControllerCommands::arrowadjust_release,
         ControllerCommands::pick_cyl_release,
         ControllerCommands::pick_slide_release,
+        //
         ControllerCommands::set_delay_250ms,
         ControllerCommands::delay,
+        //
         ControllerCommands::angle_avoid_loader,
+        //
         ControllerCommands::set_delay_250ms,
         ControllerCommands::delay,
+        //
         ControllerCommands::pick_slide_next_adjust,
     }
 );
@@ -747,10 +763,8 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
     if(!this->_command_ongoing)
     {   
         if(_rb){
-            Cyl_arrowadjust_release();
         }
         if(_lb){
-            Cyl_arrowadjust_grab();
         }
         if((joy->buttons[ButtonRightThumb] == 1.0) && (joy->buttons[ButtonLeftThumb] == 1.0) && _rb){
             Cyl_hand_1_grab();
@@ -1230,7 +1244,7 @@ void tr_nodelet_main::shutdown(void){
 }
 
 void tr_nodelet_main::recover(void){
-    act_conf_cmd_msg.data = (uint8_t)MotorCommands::recover_position;
+    act_conf_cmd_msg.data = (uint8_t)MotorCommands::recover_cmd;
     Shot_Power_Cmd_pub.publish(act_conf_cmd_msg);
     act_conf_cmd_msg.data = (uint8_t)MotorCommands::recover_cmd;
     Shot_Angle_Cmd_pub.publish(act_conf_cmd_msg);
@@ -1263,7 +1277,7 @@ void tr_nodelet_main::change_OpMode(void){
 void tr_nodelet_main::Shot_Power_Homing(void){
     act_conf_cmd_msg.data = (uint8_t)MotorCommands::shutdown_cmd;
     Shot_Power_Cmd_pub.publish(act_conf_cmd_msg);
-    act_conf_cmd_msg.data = (uint8_t)MotorCommands::homing_shirasu_cmd;
+    act_conf_cmd_msg.data = (uint8_t)MotorCommands::homing_cmd;
     Shot_Power_Cmd_pub.publish(act_conf_cmd_msg);
 }
 

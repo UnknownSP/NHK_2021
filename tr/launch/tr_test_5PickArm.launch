@@ -43,7 +43,7 @@
       <remap from="motor3_cmd_val" to="foot3_cmd_vel"/>
     </node>
     <node pkg="nodelet" type="nodelet" name="motor4" args="$(arg nodelet_mode) can_plugins/Md201xNode $(arg manager_name)" >
-      <param name="bid" type="string" value="700" />
+      <param name="bid" type="string" value="540" />
       <remap from="motor4_cmd" to="Shot_Power_cmd"/>
       <remap from="motor4_cmd_val" to="Shot_Power_cmd_pos"/>
     </node>
@@ -104,7 +104,7 @@
       <param name="shot_angle_load_adjust" type="double" value="0.0" />
 
       <param name="shot_power_shooter_init" type="double" value="-31.6" /> 
-      <param name="shot_power_load" type="double" value="-7.5" />
+      <param name="shot_power_load" type="double" value="-11.0" />
       <param name="shot_power_load_wait" type="double" value="-4" />
 
       <param name="shot_power_launch_pos_1" type="double" value="-2.0" /> <!-- weak -->
