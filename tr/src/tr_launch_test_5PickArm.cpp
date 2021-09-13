@@ -515,8 +515,6 @@ const std::vector<ControllerCommands> tr_nodelet_main::Shot_and_Load_commands(
         //
         ControllerCommands::set_delay_1s,
         ControllerCommands::delay,
-        ControllerCommands::set_delay_1s,
-        ControllerCommands::delay,
         ControllerCommands::set_delay_500ms,
         ControllerCommands::delay,
         //
@@ -524,6 +522,9 @@ const std::vector<ControllerCommands> tr_nodelet_main::Shot_and_Load_commands(
         ControllerCommands::set_delay_100ms,
         ControllerCommands::delay,
         ControllerCommands::pick_cyl_grab,
+        //
+        ControllerCommands::set_delay_1s,
+        ControllerCommands::delay,
         //
         ControllerCommands::shooter_grab,
         //
@@ -1154,7 +1155,7 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
                     break;
 
                 case 2:
-                    PickSlide_mv_avoidlauncher();
+                    PickSlide_mv_1_adjust();
                     Cyl_rotate_hands_load();
                     break;
 
@@ -1163,7 +1164,7 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
                     break;
 
                 case 4:
-                    PickSlide_mv_avoidlauncher();
+                    PickSlide_mv_1_adjust();
                     Cyl_rotate_hands_load();
                     Load_position = 1;
                     break;
@@ -1261,7 +1262,7 @@ void tr_nodelet_main::homing(void){
     act_conf_cmd_msg.data = (uint8_t)MotorCommands::shutdown_cmd;
     Shot_Power_Cmd_pub.publish(act_conf_cmd_msg);
     Shot_Angle_Cmd_pub.publish(act_conf_cmd_msg);
-    act_conf_cmd_msg.data = (uint8_t)MotorCommands::homing_shirasu_cmd;
+    act_conf_cmd_msg.data = (uint8_t)MotorCommands::homing_cmd;
     Shot_Power_Cmd_pub.publish(act_conf_cmd_msg);
     Shot_Angle_Cmd_pub.publish(act_conf_cmd_msg);
 }    
