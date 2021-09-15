@@ -318,10 +318,12 @@ class tr_nodelet_main : public nodelet::Nodelet
     double shot_power_launch_pos_2;
     double shot_power_launch_pos_3;
     double shot_power_launch_pos_4;
+    double shot_power_launch_pos_5;
     double shot_angle_launch_pos_1;
     double shot_angle_launch_pos_2;
     double shot_angle_launch_pos_3;
     double shot_angle_launch_pos_4;
+    double shot_angle_launch_pos_5;
     double shot_angle_avoid_loader;
     double shot_angle_avoid_loader_arrow;
     double shot_angle_load_wait;
@@ -342,6 +344,17 @@ class tr_nodelet_main : public nodelet::Nodelet
     double shot_angle_launch_pos_2_wall;
     double shot_angle_launch_pos_3_wall;
     double shot_angle_launch_pos_4_wall;
+
+    double shot_power_launch_pos_1_sz;
+    double shot_power_launch_pos_2_sz;
+    double shot_power_launch_pos_3_sz;
+    double shot_power_launch_pos_4_sz;
+    double shot_power_launch_pos_5_sz;
+    double shot_angle_launch_pos_1_sz;
+    double shot_angle_launch_pos_2_sz;
+    double shot_angle_launch_pos_3_sz;
+    double shot_angle_launch_pos_4_sz;
+    double shot_angle_launch_pos_5_sz;
 
     int Pick_mode = -1;
     int Load_mode = -1;
@@ -623,10 +636,12 @@ void tr_nodelet_main::onInit(){
     _nh.param("shot_power_launch_pos_2", this->shot_power_launch_pos_2, 0.0);
     _nh.param("shot_power_launch_pos_3", this->shot_power_launch_pos_3, 0.0);
     _nh.param("shot_power_launch_pos_4", this->shot_power_launch_pos_4, 0.0);
+    _nh.param("shot_power_launch_pos_5", this->shot_power_launch_pos_5, 0.0);
     _nh.param("shot_angle_launch_pos_1", this->shot_angle_launch_pos_1, 0.0);
     _nh.param("shot_angle_launch_pos_2", this->shot_angle_launch_pos_2, 0.0);
     _nh.param("shot_angle_launch_pos_3", this->shot_angle_launch_pos_3, 0.0);
     _nh.param("shot_angle_launch_pos_4", this->shot_angle_launch_pos_4, 0.0);
+    _nh.param("shot_angle_launch_pos_5", this->shot_angle_launch_pos_5, 0.0);
     _nh.param("shot_angle_avoid_loader", this->shot_angle_avoid_loader, 0.0);
     _nh.param("shot_angle_avoid_loader_arrow", this->shot_angle_avoid_loader_arrow, 0.0);
     _nh.param("shot_angle_load_wait", this->shot_angle_load_wait, 0.0);
@@ -647,6 +662,17 @@ void tr_nodelet_main::onInit(){
     _nh.param("shot_angle_launch_pos_2_wall", this->shot_angle_launch_pos_2_wall, 0.0);
     _nh.param("shot_angle_launch_pos_3_wall", this->shot_angle_launch_pos_3_wall, 0.0);
     _nh.param("shot_angle_launch_pos_4_wall", this->shot_angle_launch_pos_4_wall, 0.0);
+
+    _nh.param("shot_power_launch_pos_1_sz", this->shot_power_launch_pos_1_sz, 0.0);
+    _nh.param("shot_power_launch_pos_2_sz", this->shot_power_launch_pos_2_sz, 0.0);
+    _nh.param("shot_power_launch_pos_3_sz", this->shot_power_launch_pos_3_sz, 0.0);
+    _nh.param("shot_power_launch_pos_4_sz", this->shot_power_launch_pos_4_sz, 0.0);
+    _nh.param("shot_power_launch_pos_5_sz", this->shot_power_launch_pos_5_sz, 0.0);
+    _nh.param("shot_angle_launch_pos_1_sz", this->shot_angle_launch_pos_1_sz, 0.0);
+    _nh.param("shot_angle_launch_pos_2_sz", this->shot_angle_launch_pos_2_sz, 0.0);
+    _nh.param("shot_angle_launch_pos_3_sz", this->shot_angle_launch_pos_3_sz, 0.0);
+    _nh.param("shot_angle_launch_pos_4_sz", this->shot_angle_launch_pos_4_sz, 0.0);
+    _nh.param("shot_angle_launch_pos_5_sz", this->shot_angle_launch_pos_5_sz, 0.0);
 
   	// related to grab and load the arrow 
     //_nh.param("roll_arm_radian", this->ArmRollRadian, 0.0);
@@ -768,18 +794,18 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
         if(_lb){
         }
         if((joy->buttons[ButtonRightThumb] == 1.0) && (joy->buttons[ButtonLeftThumb] == 1.0) && _rb){
-            Cyl_hand_1_grab();
-            Cyl_hand_2_grab();
-            Cyl_hand_3_grab();
-            Cyl_hand_4_grab();
-            Cyl_hand_5_grab();
+            //Cyl_hand_1_grab();
+            //Cyl_hand_2_grab();
+            //Cyl_hand_3_grab();
+            //Cyl_hand_4_grab();
+            //Cyl_hand_5_grab();
         }
         if((joy->buttons[ButtonRightThumb] == 1.0) && (joy->buttons[ButtonLeftThumb] == 1.0) && _lb){
-            Cyl_hand_1_release();
-            Cyl_hand_2_release();
-            Cyl_hand_3_release();
-            Cyl_hand_4_release();
-            Cyl_hand_5_release();
+            //Cyl_hand_1_release();
+            //Cyl_hand_2_release();
+            //Cyl_hand_3_release();
+            //Cyl_hand_4_release();
+            //Cyl_hand_5_release();
         }
         //------------------------------------------------------------
         if((joy->buttons[ButtonRightThumb] == 1.0) && (joy->buttons[ButtonLeftThumb] == 1.0) && _righttrigger){
@@ -825,7 +851,19 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
         }
 
         if(_a){
-            if((joy->buttons[ButtonRightThumb] == 1.0)){
+            if((joy->buttons[ButtonRightThumb] == 1.0) && (joy->buttons[ButtonLeftThumb] == 1.0)){
+                Cyl_hand_1_grab();
+                Cyl_hand_2_grab();
+                Cyl_hand_3_grab();
+                Cyl_hand_4_grab();
+                Cyl_hand_5_grab();
+            }else if(_rb && _lb){
+                Cyl_hand_1_release();
+                Cyl_hand_2_release();
+                Cyl_hand_3_release();
+                Cyl_hand_4_release();
+                Cyl_hand_5_release();
+            }else if((joy->buttons[ButtonRightThumb] == 1.0)){
                 if(_Cyl_hand_5){
                     Cyl_hand_5_grab();
                     _Cyl_hand_5 = false;
@@ -874,34 +912,81 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
         //if(_loaded && !_loading ){
             //shot_power_adjust += joy->buttons[ButtonLeftThumb] * 2;
             //shot_power_adjust -= joy->buttons[ButtonRightThumb] * 2;
-            if(_pady == 1 && (joy->buttons[ButtonRightThumb] == 1.0) && (joy->buttons[ButtonLeftThumb] == 1.0)){
-                Shot_Power_move_target(shot_power_launch_pos_1 /*+ shot_power_adjust*/);
-                Shot_Angle_move_target(shot_angle_launch_pos_1);
-            }else if(_pady == 1 && (joy->buttons[ButtonRightThumb] == 0.0) && (joy->buttons[ButtonLeftThumb] == 0.0)){
-                Shot_Power_move_target(shot_power_launch_pos_1_wall);
-                Shot_Angle_move_target(shot_angle_launch_pos_1_wall);
+        if((joy->buttons[ButtonRightThumb] == 0.0) && (joy->buttons[ButtonLeftThumb] == 0.0)){
+            if(_lb){
+                if(_pady == 1){
+                    Shot_Power_move_target(shot_power_launch_pos_2);
+                    Shot_Angle_move_target(shot_angle_launch_pos_2);
+                }else if(_padx == 1 || _padx == -1){
+                    Shot_Power_move_target(shot_power_launch_pos_3);
+                    Shot_Angle_move_target(shot_angle_launch_pos_3);
+                }else if(_pady == -1){
+                    Shot_Power_move_target(shot_power_launch_pos_4);
+                    Shot_Angle_move_target(shot_angle_launch_pos_4);
+                }
+            }else{
+                if(_padx == 1){
+                    Shot_Power_move_target(shot_power_launch_pos_1);
+                    Shot_Angle_move_target(shot_angle_launch_pos_1);
+                }else if(_padx == -1){
+                    Shot_Power_move_target(shot_power_launch_pos_5);
+                    Shot_Angle_move_target(shot_angle_launch_pos_5);
+                }
             }
-            if(_padx == 1 && (joy->buttons[ButtonRightThumb] == 1.0) && (joy->buttons[ButtonLeftThumb] == 1.0)){
-                Shot_Power_move_target(shot_power_launch_pos_2 /*+ shot_power_adjust*/);
-                Shot_Angle_move_target(shot_angle_launch_pos_2);
-            }else if(_padx == 1 && (joy->buttons[ButtonRightThumb] == 0.0) && (joy->buttons[ButtonLeftThumb] == 0.0)){
-                Shot_Power_move_target(shot_power_launch_pos_2_wall);
-                Shot_Angle_move_target(shot_angle_launch_pos_2_wall);
+        }else if((joy->buttons[ButtonRightThumb] == 0.0) && (joy->buttons[ButtonLeftThumb] == 1.0)){
+            if(_lb){
+                if(_pady == 1){
+                    Shot_Power_move_target(shot_power_launch_pos_2_sz);
+                    Shot_Angle_move_target(shot_angle_launch_pos_2_sz);
+                }else if(_padx == 1 || _padx == -1){
+                    Shot_Power_move_target(shot_power_launch_pos_3_sz);
+                    Shot_Angle_move_target(shot_angle_launch_pos_3_sz);
+                }else if(_pady == -1){
+                    Shot_Power_move_target(shot_power_launch_pos_4_sz);
+                    Shot_Angle_move_target(shot_angle_launch_pos_4_sz);
+                }
+            }else{
+                if(_padx == 1){
+                    Shot_Power_move_target(shot_power_launch_pos_1_sz);
+                    Shot_Angle_move_target(shot_angle_launch_pos_1_sz);
+                }else if(_padx == -1){
+                    Shot_Power_move_target(shot_power_launch_pos_5_sz);
+                    Shot_Angle_move_target(shot_angle_launch_pos_5_sz);
+                }
             }
-            if(_padx == -1 && (joy->buttons[ButtonRightThumb] == 1.0) && (joy->buttons[ButtonLeftThumb] == 1.0)){
-                Shot_Power_move_target(shot_power_launch_pos_3 /*+ shot_power_adjust*/);
-                Shot_Angle_move_target(shot_angle_launch_pos_3);
-            }else if(_padx == -1 && (joy->buttons[ButtonRightThumb] == 0.0) && (joy->buttons[ButtonLeftThumb] == 0.0)){
-                Shot_Power_move_target(shot_power_launch_pos_3_wall);
-                Shot_Angle_move_target(shot_angle_launch_pos_3_wall);
+        }else if((joy->buttons[ButtonRightThumb] == 1.0) && (joy->buttons[ButtonLeftThumb] == 1.0)){
+            if(_pady == 1){
+                Shot_Power_move_target(shot_power_shooter_init);
             }
-            if(_pady == -1 && (joy->buttons[ButtonRightThumb] == 1.0) && (joy->buttons[ButtonLeftThumb] == 1.0)){
-                Shot_Power_move_target(shot_power_launch_pos_4 /*+ shot_power_adjust*/);
-                Shot_Angle_move_target(shot_angle_launch_pos_4);
-            }else if(_pady == -1 && (joy->buttons[ButtonRightThumb] == 0.0) && (joy->buttons[ButtonLeftThumb] == 0.0)){
-                Shot_Power_move_target(shot_power_launch_pos_4_wall);
-                Shot_Angle_move_target(shot_angle_launch_pos_4_wall);
-            }
+        }
+        if(_pady == 1 && (joy->buttons[ButtonRightThumb] == 1.0) && (joy->buttons[ButtonLeftThumb] == 1.0)){
+            Shot_Power_move_target(shot_power_launch_pos_1);
+            Shot_Angle_move_target(shot_angle_launch_pos_1);
+        }else if(_pady == 1 && (joy->buttons[ButtonRightThumb] == 0.0) && (joy->buttons[ButtonLeftThumb] == 0.0)){
+            Shot_Power_move_target(shot_power_launch_pos_1_wall);
+            Shot_Angle_move_target(shot_angle_launch_pos_1_wall);
+        }
+        if(_padx == 1 && (joy->buttons[ButtonRightThumb] == 1.0) && (joy->buttons[ButtonLeftThumb] == 1.0)){
+            Shot_Power_move_target(shot_power_launch_pos_2);
+            Shot_Angle_move_target(shot_angle_launch_pos_2);
+        }else if(_padx == 1 && (joy->buttons[ButtonRightThumb] == 0.0) && (joy->buttons[ButtonLeftThumb] == 0.0)){
+            Shot_Power_move_target(shot_power_launch_pos_2_wall);
+            Shot_Angle_move_target(shot_angle_launch_pos_2_wall);
+        }
+        if(_padx == -1 && (joy->buttons[ButtonRightThumb] == 1.0) && (joy->buttons[ButtonLeftThumb] == 1.0)){
+            Shot_Power_move_target(shot_power_launch_pos_3);
+            Shot_Angle_move_target(shot_angle_launch_pos_3);
+        }else if(_padx == -1 && (joy->buttons[ButtonRightThumb] == 0.0) && (joy->buttons[ButtonLeftThumb] == 0.0)){
+            Shot_Power_move_target(shot_power_launch_pos_3_wall);
+            Shot_Angle_move_target(shot_angle_launch_pos_3_wall);
+        }
+        if(_pady == -1 && (joy->buttons[ButtonRightThumb] == 1.0) && (joy->buttons[ButtonLeftThumb] == 1.0)){
+            Shot_Power_move_target(shot_power_launch_pos_4);
+            Shot_Angle_move_target(shot_angle_launch_pos_4);
+        }else if(_pady == -1 && (joy->buttons[ButtonRightThumb] == 0.0) && (joy->buttons[ButtonLeftThumb] == 0.0)){
+            Shot_Power_move_target(shot_power_launch_pos_4_wall);
+            Shot_Angle_move_target(shot_angle_launch_pos_4_wall);
+        }
             //_shooter_pos_load = false;
         //}
 
