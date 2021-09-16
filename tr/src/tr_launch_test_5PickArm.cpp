@@ -816,9 +816,6 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
             Shot_Angle_Homing();
             Shot_Power_Homing();
         }
-        if(_rb && _lb/* && !_loading*/){
-            Cyl_shooter_release();
-        }
 
         if(/*!_loading &&*/ _lefttrigger){
             if(_load_end){
@@ -933,8 +930,14 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
                     Shot_Angle_move_target(shot_angle_launch_pos_5);
                 }
             }
-        }else if((joy->buttons[ButtonRightThumb] == 0.0) && (joy->buttons[ButtonLeftThumb] == 1.0)){
-            if(_lb){
+        }else if((joy->buttons[ButtonRightThumb] == 1.0) && (joy->buttons[ButtonLeftThumb] == 1.0)){
+            if(_lb && _rb){
+                if(_pady == 1){
+                    Shot_Power_move_target(shot_power_shooter_init);
+                }else if(_pady == -1){
+                    Cyl_shooter_release();
+                }
+            }else if(_lb){
                 if(_pady == 1){
                     Shot_Power_move_target(shot_power_launch_pos_2_sz);
                     Shot_Angle_move_target(shot_angle_launch_pos_2_sz);
@@ -954,39 +957,35 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
                     Shot_Angle_move_target(shot_angle_launch_pos_5_sz);
                 }
             }
-        }else if((joy->buttons[ButtonRightThumb] == 1.0) && (joy->buttons[ButtonLeftThumb] == 1.0)){
-            if(_pady == 1){
-                Shot_Power_move_target(shot_power_shooter_init);
-            }
         }
-        if(_pady == 1 && (joy->buttons[ButtonRightThumb] == 1.0) && (joy->buttons[ButtonLeftThumb] == 1.0)){
-            Shot_Power_move_target(shot_power_launch_pos_1);
-            Shot_Angle_move_target(shot_angle_launch_pos_1);
-        }else if(_pady == 1 && (joy->buttons[ButtonRightThumb] == 0.0) && (joy->buttons[ButtonLeftThumb] == 0.0)){
-            Shot_Power_move_target(shot_power_launch_pos_1_wall);
-            Shot_Angle_move_target(shot_angle_launch_pos_1_wall);
-        }
-        if(_padx == 1 && (joy->buttons[ButtonRightThumb] == 1.0) && (joy->buttons[ButtonLeftThumb] == 1.0)){
-            Shot_Power_move_target(shot_power_launch_pos_2);
-            Shot_Angle_move_target(shot_angle_launch_pos_2);
-        }else if(_padx == 1 && (joy->buttons[ButtonRightThumb] == 0.0) && (joy->buttons[ButtonLeftThumb] == 0.0)){
-            Shot_Power_move_target(shot_power_launch_pos_2_wall);
-            Shot_Angle_move_target(shot_angle_launch_pos_2_wall);
-        }
-        if(_padx == -1 && (joy->buttons[ButtonRightThumb] == 1.0) && (joy->buttons[ButtonLeftThumb] == 1.0)){
-            Shot_Power_move_target(shot_power_launch_pos_3);
-            Shot_Angle_move_target(shot_angle_launch_pos_3);
-        }else if(_padx == -1 && (joy->buttons[ButtonRightThumb] == 0.0) && (joy->buttons[ButtonLeftThumb] == 0.0)){
-            Shot_Power_move_target(shot_power_launch_pos_3_wall);
-            Shot_Angle_move_target(shot_angle_launch_pos_3_wall);
-        }
-        if(_pady == -1 && (joy->buttons[ButtonRightThumb] == 1.0) && (joy->buttons[ButtonLeftThumb] == 1.0)){
-            Shot_Power_move_target(shot_power_launch_pos_4);
-            Shot_Angle_move_target(shot_angle_launch_pos_4);
-        }else if(_pady == -1 && (joy->buttons[ButtonRightThumb] == 0.0) && (joy->buttons[ButtonLeftThumb] == 0.0)){
-            Shot_Power_move_target(shot_power_launch_pos_4_wall);
-            Shot_Angle_move_target(shot_angle_launch_pos_4_wall);
-        }
+        //if(_pady == 1 && (joy->buttons[ButtonRightThumb] == 1.0) && (joy->buttons[ButtonLeftThumb] == 1.0)){
+        //    Shot_Power_move_target(shot_power_launch_pos_1);
+        //    Shot_Angle_move_target(shot_angle_launch_pos_1);
+        //}else if(_pady == 1 && (joy->buttons[ButtonRightThumb] == 0.0) && (joy->buttons[ButtonLeftThumb] == 0.0)){
+        //    Shot_Power_move_target(shot_power_launch_pos_1_wall);
+        //    Shot_Angle_move_target(shot_angle_launch_pos_1_wall);
+        //}
+        //if(_padx == 1 && (joy->buttons[ButtonRightThumb] == 1.0) && (joy->buttons[ButtonLeftThumb] == 1.0)){
+        //    Shot_Power_move_target(shot_power_launch_pos_2);
+        //    Shot_Angle_move_target(shot_angle_launch_pos_2);
+        //}else if(_padx == 1 && (joy->buttons[ButtonRightThumb] == 0.0) && (joy->buttons[ButtonLeftThumb] == 0.0)){
+        //    Shot_Power_move_target(shot_power_launch_pos_2_wall);
+        //    Shot_Angle_move_target(shot_angle_launch_pos_2_wall);
+        //}
+        //if(_padx == -1 && (joy->buttons[ButtonRightThumb] == 1.0) && (joy->buttons[ButtonLeftThumb] == 1.0)){
+        //    Shot_Power_move_target(shot_power_launch_pos_3);
+        //    Shot_Angle_move_target(shot_angle_launch_pos_3);
+        //}else if(_padx == -1 && (joy->buttons[ButtonRightThumb] == 0.0) && (joy->buttons[ButtonLeftThumb] == 0.0)){
+        //    Shot_Power_move_target(shot_power_launch_pos_3_wall);
+        //    Shot_Angle_move_target(shot_angle_launch_pos_3_wall);
+        //}
+        //if(_pady == -1 && (joy->buttons[ButtonRightThumb] == 1.0) && (joy->buttons[ButtonLeftThumb] == 1.0)){
+        //    Shot_Power_move_target(shot_power_launch_pos_4);
+        //    Shot_Angle_move_target(shot_angle_launch_pos_4);
+        //}else if(_pady == -1 && (joy->buttons[ButtonRightThumb] == 0.0) && (joy->buttons[ButtonLeftThumb] == 0.0)){
+        //    Shot_Power_move_target(shot_power_launch_pos_4_wall);
+        //    Shot_Angle_move_target(shot_angle_launch_pos_4_wall);
+        //}
             //_shooter_pos_load = false;
         //}
 
