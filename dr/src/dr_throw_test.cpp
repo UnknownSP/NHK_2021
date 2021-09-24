@@ -60,6 +60,8 @@ enum class ControllerCommands : uint16_t
     WaitPickRackArrow,
 
     launch_start,
+    launch_start_wait,
+    launch_start_waitstart,
 
     adjust_arm_to_launch,
 // launch_and_home the arrow
@@ -366,6 +368,9 @@ private:
     double Pos_4_free_RotStop_cur;
 
     double RotStart_cur_adjust;
+    double RotStart_deg_adjust;
+    double RotStop_deg_adjust;
+    double RotStart_deg_error;
 
     bool _LaunchSet_1_wall = false;
     bool _LaunchSet_2_wall = false;
@@ -413,6 +418,9 @@ int dr_nodelet_main::ButtonRightTrigger = 11;
 
 const std::vector<ControllerCommands> dr_nodelet_main::launch_start_commands(
     {
+        ControllerCommands::recover_velocity,
+        ControllerCommands::launch_start_waitstart,
+        ControllerCommands::launch_start_wait,
         ControllerCommands::recover_current,
         ControllerCommands::Pitch_MV_Zero,
         ControllerCommands::launch_start,
@@ -514,8 +522,13 @@ const std::vector<ControllerCommands> dr_nodelet_main::initial_pose(
         ControllerCommands::delay,
         ControllerCommands::set_delay_1s,
         ControllerCommands::delay,
+        ControllerCommands::set_delay_1s,
+        ControllerCommands::delay,
+        ControllerCommands::set_delay_1s,
+        ControllerCommands::delay,
         ControllerCommands::Pitch_recover,
         ControllerCommands::Pitch_recover,
+        ControllerCommands::recover_position,
         //ControllerCommands::Pitch_MV_avoid_arm,
         //ControllerCommands::set_delay_1s,
         //ControllerCommands::delay,
@@ -536,12 +549,14 @@ const std::vector<ControllerCommands> dr_nodelet_main::manual_all(
 const std::vector<ControllerCommands> dr_nodelet_main::SetLaunchPosi_commands(
     {
         ControllerCommands::Cyl_Arm_grab,
-        ControllerCommands::Pitch_Homing,
-        ControllerCommands::Pitch_Homing,
-        ControllerCommands::Pitch_Homing,
+        ControllerCommands::Pitch_MV_Zero,
+        ControllerCommands::Pitch_MV_Zero,
+        //ControllerCommands::Pitch_Homing,
+        //ControllerCommands::Pitch_Homing,
+        //ControllerCommands::Pitch_Homing,
         ControllerCommands::set_delay_1s,
         ControllerCommands::delay,
-        ControllerCommands::Pitch_Homing,
+        //ControllerCommands::Pitch_Homing,
         //ControllerCommands::set_delay_1s,
         //ControllerCommands::delay,
         ControllerCommands::set_delay_500ms,
@@ -561,6 +576,8 @@ const std::vector<ControllerCommands> dr_nodelet_main::SetLaunchPosi_commands(
 
 const std::vector<ControllerCommands> dr_nodelet_main::ArmPickup_commands(
     {
+        ControllerCommands::Pitch_recover,
+        ControllerCommands::Pitch_recover,
         ControllerCommands::Pitch_MV_avoid_arm,
         ControllerCommands::Cyl_Catch_grab,
         ControllerCommands::Cyl_Arm_release,
@@ -600,13 +617,15 @@ const std::vector<ControllerCommands> dr_nodelet_main::ArmPickup_commands(
 );
 
 const std::vector<ControllerCommands> dr_nodelet_main::ArmPickup_rack_commands(
-    {
-        ControllerCommands::Pitch_Homing,
-        ControllerCommands::Pitch_Homing,
+    {   
+        ControllerCommands::Pitch_MV_Zero,
+        ControllerCommands::Pitch_MV_Zero,
+        //ControllerCommands::Pitch_Homing,
+        //ControllerCommands::Pitch_Homing,
         //ControllerCommands::Cyl_Arm_release,
         ControllerCommands::set_delay_500ms,
         ControllerCommands::delay,
-        ControllerCommands::Pitch_Homing,
+        //ControllerCommands::Pitch_Homing,
         ControllerCommands::recover_position,
         ControllerCommands::ArmRotateToPickRackArrow,
         ControllerCommands::set_delay_1s,
@@ -617,9 +636,9 @@ const std::vector<ControllerCommands> dr_nodelet_main::ArmPickup_rack_commands(
         ControllerCommands::delay,
         //ControllerCommands::recover_position,
         ControllerCommands::ArmRotateToAdjustRackArrow_high,
-        ControllerCommands::WaitPickRackArrow,
-        ControllerCommands::arm_home,
-        ControllerCommands::arm_home,
+        //ControllerCommands::WaitPickRackArrow,
+        //ControllerCommands::arm_home,
+        //ControllerCommands::arm_home,
         //ControllerCommands::ArmRotateToAdjustRackArrow,
         //ControllerCommands::set_delay_1s,
         //ControllerCommands::delay,
@@ -788,6 +807,9 @@ void dr_nodelet_main::onInit(void)
     _nh.param("Pos_4_free_RotStop_cur", Pos_4_free_RotStop_cur, 0.0);
 
     _nh.param("RotStart_cur_adjust", RotStart_cur_adjust, 0.0);
+    _nh.param("RotStart_deg_adjust", RotStart_deg_adjust, 0.0);
+    _nh.param("RotStop_deg_adjust", RotStop_deg_adjust, 0.0);
+    _nh.param("RotStart_deg_error", RotStart_deg_error, 0.0);
     //----------------------------------------
 
     nh.getParam("ButtonA", ButtonA);
@@ -1026,8 +1048,24 @@ void dr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
     }else{
         _lefttrigger_flag = false;
     }
+    if (_righttrigger && (_padx != -1))
+    {   
+        //this->act_conf_cmd_msg.data = (uint8_t)MotorCommands::recover_velocity;
+        //this->ArmCmd_pub.publish(act_conf_cmd_msg);
+        //this->arm_vel_msg.data = 2;
+        //this->ArmVal_pub.publish(arm_vel_msg);
+        this->homing();
+    }else if(_padx == -1 && _righttrigger){
+        this->command_list = &initial_pose;
+        _command_ongoing = true;
+        _initial_pose_finished = true;
+    }
     if(!this->_command_ongoing){
-
+        if(_a){
+            this->act_conf_cmd_msg.data = (uint8_t)MotorCommands::recover_position;
+            this->ArmCmd_pub.publish(act_conf_cmd_msg);
+            ArmRotate_To_TargetPosi(-1.5);
+        }
         if( (joy->buttons[ButtonRightThumb] == 1.0) && (joy->buttons[ButtonLeftThumb] == 1.0)){
             this->command_list = &ArmPickup_rack_commands;
             _command_ongoing = true;
@@ -1190,7 +1228,7 @@ void dr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
                 }
             }
         }
-        if(_a&&_has_loaded&&(joy->buttons[ButtonLeftThumb] == 1.0)){
+        if(_y&&_has_loaded&&(joy->buttons[ButtonRightThumb] == 1.0)){
             this->command_list = &launch_start_commands;
             _command_ongoing = true;
             _has_loaded = false;
@@ -1219,19 +1257,6 @@ void dr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
         //    _command_ongoing = true;
         //    _has_loaded = false;
         //}
-        
-        if (_righttrigger && (_padx != -1))
-        {   
-            //this->act_conf_cmd_msg.data = (uint8_t)MotorCommands::recover_velocity;
-            //this->ArmCmd_pub.publish(act_conf_cmd_msg);
-            //this->arm_vel_msg.data = 2;
-            //this->ArmVal_pub.publish(arm_vel_msg);
-            this->homing();
-        }else if(_padx == -1 && _righttrigger){
-            this->command_list = &initial_pose;
-            _command_ongoing = true;
-            _initial_pose_finished = true;
-        }
     }
     if (this->_is_manual_enabled)
     {
@@ -1249,13 +1274,13 @@ void dr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
             vel_y /= vel_norm;
         }
         if(joy->buttons[ButtonLeftThumb] >= 1.0){
-            this->cmd_vel_msg.linear.x = vel_x * 0.5;
-            this->cmd_vel_msg.linear.y = vel_y * 0.5;
-            this->cmd_vel_msg.angular.z = -vel_yaw * 0.5;
+            this->cmd_vel_msg.linear.x = vel_x * 0.3;
+            this->cmd_vel_msg.linear.y = vel_y * 0.3;
+            this->cmd_vel_msg.angular.z = -vel_yaw * 0.3;
         }else if(joy->buttons[ButtonRightThumb] >= 1.0){
             this->cmd_vel_msg.linear.x = vel_x * 5;
             this->cmd_vel_msg.linear.y = vel_y * 5;
-            this->cmd_vel_msg.angular.z = -vel_yaw * 2.5;
+            this->cmd_vel_msg.angular.z = -vel_yaw * 3.5;
         }else{
             this->cmd_vel_msg.linear.x = vel_x;
             this->cmd_vel_msg.linear.y = vel_y;
@@ -1377,48 +1402,83 @@ void dr_nodelet_main::control_timer_callback(const ros::TimerEvent &event)
     {
         this->arm_vel_msg.data = 1;
         this->ArmVal_pub.publish(arm_vel_msg);
-        if(this->_LaunchSet_1_wall){
-            while(this->throw_position_observed <= this->Pos_1_wall_RotStart_deg-0.5);
-        }else if(this->_LaunchSet_2_wall){
-            while(this->throw_position_observed <= this->Pos_2_wall_RotStart_deg-0.5);
-        }else if(this->_LaunchSet_3_wall){
-            while(this->throw_position_observed <= this->Pos_3_wall_RotStart_deg-0.5);
-        }else if(this->_LaunchSet_4_wall){
-            while(this->throw_position_observed <= this->Pos_4_wall_RotStart_deg-0.5);
-        }else if(this->_LaunchSet_5_wall){
-            while(this->throw_position_observed <= this->Pos_5_wall_RotStart_deg-0.5);
-        }else if(this->_LaunchSet_2_free){
-            while(this->throw_position_observed <= this->Pos_2_free_RotStart_deg-0.5);
-        }else if(this->_LaunchSet_3_free){
-            while(this->throw_position_observed <= this->Pos_3_free_RotStart_deg-0.5);
-        }else if(this->_LaunchSet_4_free){
-            while(this->throw_position_observed <= this->Pos_4_free_RotStart_deg-0.5);
-        }
-        this->arm_vel_msg.data = 0;
-        this->ArmVal_pub.publish(arm_vel_msg);
+        //if(this->_LaunchSet_1_wall){
+        //    while(this->throw_position_observed <= this->Pos_1_wall_RotStart_deg+this->RotStart_deg_adjust-0.5){
+        //        if(_back){
+        //            break;
+        //        }
+        //    };
+        //}else if(this->_LaunchSet_2_wall){
+        //    while(this->throw_position_observed <= this->Pos_2_wall_RotStart_deg+this->RotStart_deg_adjust-0.5){
+        //        if(_back){
+        //            break;
+        //        }
+        //    };
+        //}else if(this->_LaunchSet_3_wall){
+        //    while(this->throw_position_observed <= this->Pos_3_wall_RotStart_deg+this->RotStart_deg_adjust-0.5){
+        //        if(_back){
+        //            break;
+        //        }
+        //    };
+        //}else if(this->_LaunchSet_4_wall){
+        //    while(this->throw_position_observed <= this->Pos_4_wall_RotStart_deg+this->RotStart_deg_adjust-0.5){
+        //        if(_back){
+        //            break;
+        //        }
+        //    };
+        //}else if(this->_LaunchSet_5_wall){
+        //    while(this->throw_position_observed <= this->Pos_5_wall_RotStart_deg+this->RotStart_deg_adjust-0.5){
+        //        if(_back){
+        //            break;
+        //        }
+        //    };
+        //}else if(this->_LaunchSet_2_free){
+        //    while(this->throw_position_observed <= this->Pos_2_free_RotStart_deg+this->RotStart_deg_adjust-0.5){
+        //        if(_back){
+        //            break;
+        //        }
+        //    };
+        //}else if(this->_LaunchSet_3_free){
+        //    while(this->throw_position_observed <= this->Pos_3_free_RotStart_deg+this->RotStart_deg_adjust-0.5){
+        //        if(_back){
+        //            break;
+        //        }
+        //    };
+        //}else if(this->_LaunchSet_4_free){
+        //    while(this->throw_position_observed <= this->Pos_4_free_RotStart_deg+this->RotStart_deg_adjust-0.5){
+        //        if(_back){
+        //            break;
+        //        }
+        //    };
+        //}
+        if(this->throw_position_observed >= 1.4+this->RotStart_deg_adjust-0.5){
+            this->arm_vel_msg.data = 0;
+            this->ArmVal_pub.publish(arm_vel_msg);
 
-        this->currentCommandIndex++;
+            this->currentCommandIndex++;  
+        };
         NODELET_INFO("ArmRotate_to_RotStart");
     }
     else if(currentCommand == ControllerCommands::ArmRotateToRotStart_Pos)
     {   
-        if(this->_LaunchSet_1_wall){
-            this->ArmRotate_To_TargetPosi(this->Pos_1_wall_RotStart_deg);
-        }else if(this->_LaunchSet_2_wall){
-            this->ArmRotate_To_TargetPosi(this->Pos_2_wall_RotStart_deg);
-        }else if(this->_LaunchSet_3_wall){
-            this->ArmRotate_To_TargetPosi(this->Pos_3_wall_RotStart_deg);
-        }else if(this->_LaunchSet_4_wall){
-            this->ArmRotate_To_TargetPosi(this->Pos_4_wall_RotStart_deg);
-        }else if(this->_LaunchSet_5_wall){
-            this->ArmRotate_To_TargetPosi(this->Pos_5_wall_RotStart_deg);
-        }else if(this->_LaunchSet_2_free){
-            this->ArmRotate_To_TargetPosi(this->Pos_2_free_RotStart_deg);
-        }else if(this->_LaunchSet_3_free){
-            this->ArmRotate_To_TargetPosi(this->Pos_3_free_RotStart_deg);
-        }else if(this->_LaunchSet_4_free){
-            this->ArmRotate_To_TargetPosi(this->Pos_4_free_RotStart_deg);
-        }
+        //if(this->_LaunchSet_1_wall){
+        //    this->ArmRotate_To_TargetPosi(this->Pos_1_wall_RotStart_deg+this->RotStart_deg_adjust);
+        //}else if(this->_LaunchSet_2_wall){
+        //    this->ArmRotate_To_TargetPosi(this->Pos_2_wall_RotStart_deg+this->RotStart_deg_adjust);
+        //}else if(this->_LaunchSet_3_wall){
+        //    this->ArmRotate_To_TargetPosi(this->Pos_3_wall_RotStart_deg+this->RotStart_deg_adjust);
+        //}else if(this->_LaunchSet_4_wall){
+        //    this->ArmRotate_To_TargetPosi(this->Pos_4_wall_RotStart_deg+this->RotStart_deg_adjust);
+        //}else if(this->_LaunchSet_5_wall){
+        //    this->ArmRotate_To_TargetPosi(this->Pos_5_wall_RotStart_deg+this->RotStart_deg_adjust);
+        //}else if(this->_LaunchSet_2_free){
+        //    this->ArmRotate_To_TargetPosi(this->Pos_2_free_RotStart_deg+this->RotStart_deg_adjust);
+        //}else if(this->_LaunchSet_3_free){
+        //    this->ArmRotate_To_TargetPosi(this->Pos_3_free_RotStart_deg+this->RotStart_deg_adjust);
+        //}else if(this->_LaunchSet_4_free){
+        //    this->ArmRotate_To_TargetPosi(this->Pos_4_free_RotStart_deg+this->RotStart_deg_adjust);
+        //}
+        this->ArmRotate_To_TargetPosi(1.4+this->RotStart_deg_adjust);
         this->currentCommandIndex++;
         NODELET_INFO("adjust_arm_to_set");
     }
@@ -1464,25 +1524,78 @@ void dr_nodelet_main::control_timer_callback(const ros::TimerEvent &event)
     else if(currentCommand == ControllerCommands::launch_start)
     {
         if(_LaunchSet_1_wall){
+            //while(this->throw_position_observed > Pos_1_wall_RotStart_deg+RotStart_deg_error || this->throw_position_observed < Pos_1_wall_RotStart_deg-RotStart_deg_error);
             this->arm_vel_msg.data = this->Pos_1_wall_RotStart_cur + this->RotStart_cur_adjust;
         }else if(_LaunchSet_2_wall){
+            //while(this->throw_position_observed > Pos_2_wall_RotStart_deg+RotStart_deg_error || this->throw_position_observed < Pos_2_wall_RotStart_deg-RotStart_deg_error);
             this->arm_vel_msg.data = this->Pos_2_wall_RotStart_cur + this->RotStart_cur_adjust;
         }else if(_LaunchSet_3_wall){
+            //while(this->throw_position_observed > Pos_3_wall_RotStart_deg+RotStart_deg_error || this->throw_position_observed < Pos_3_wall_RotStart_deg-RotStart_deg_error);
             this->arm_vel_msg.data = this->Pos_3_wall_RotStart_cur + this->RotStart_cur_adjust;
         }else if(_LaunchSet_4_wall){
+            //while(this->throw_position_observed > Pos_4_wall_RotStart_deg+RotStart_deg_error || this->throw_position_observed < Pos_4_wall_RotStart_deg-RotStart_deg_error);
             this->arm_vel_msg.data = this->Pos_4_wall_RotStart_cur + this->RotStart_cur_adjust;
         }else if(_LaunchSet_5_wall){
+            //while(this->throw_position_observed > Pos_5_wall_RotStart_deg+RotStart_deg_error || this->throw_position_observed < Pos_5_wall_RotStart_deg-RotStart_deg_error);
             this->arm_vel_msg.data = this->Pos_5_wall_RotStart_cur + this->RotStart_cur_adjust;
         }else if(_LaunchSet_2_free){
+            //while(this->throw_position_observed > Pos_2_free_RotStart_deg+RotStart_deg_error || this->throw_position_observed < Pos_2_free_RotStart_deg-RotStart_deg_error);
             this->arm_vel_msg.data = this->Pos_2_free_RotStart_cur + this->RotStart_cur_adjust;
         }else if(_LaunchSet_3_free){
+            //while(this->throw_position_observed > Pos_3_free_RotStart_deg+RotStart_deg_error || this->throw_position_observed < Pos_3_free_RotStart_deg-RotStart_deg_error);
             this->arm_vel_msg.data = this->Pos_3_free_RotStart_cur + this->RotStart_cur_adjust;
         }else if(_LaunchSet_4_free){
+            //while(this->throw_position_observed > Pos_4_free_RotStart_deg+RotStart_deg_error || this->throw_position_observed < Pos_4_free_RotStart_deg-RotStart_deg_error);
             this->arm_vel_msg.data = this->Pos_4_free_RotStart_cur + this->RotStart_cur_adjust;
         }
+        //this->act_conf_cmd_msg.data = (uint8_t)MotorCommands::recover_current;
+        //this->ArmCmd_pub.publish(act_conf_cmd_msg);
         this->ArmVal_pub.publish(arm_vel_msg);
         this->currentCommandIndex++;
         NODELET_INFO("adjust_launchers_velocity_short");
+    }
+    else if(currentCommand == ControllerCommands::launch_start_wait)
+    {
+        if(_LaunchSet_1_wall){
+            if(this->throw_position_observed > Pos_1_wall_RotStart_deg+RotStart_deg_adjust){
+                this->currentCommandIndex++;
+            }
+        }else if(_LaunchSet_2_wall){
+            if(this->throw_position_observed > Pos_2_wall_RotStart_deg+RotStart_deg_adjust){
+                this->currentCommandIndex++;
+            }
+        }else if(_LaunchSet_3_wall){
+            if(this->throw_position_observed > Pos_3_wall_RotStart_deg+RotStart_deg_adjust){
+                this->currentCommandIndex++;
+            }
+        }else if(_LaunchSet_4_wall){
+            if(this->throw_position_observed > Pos_4_wall_RotStart_deg+RotStart_deg_adjust){
+                this->currentCommandIndex++;
+            }
+        }else if(_LaunchSet_5_wall){
+            if(this->throw_position_observed > Pos_5_wall_RotStart_deg+RotStart_deg_adjust){
+                this->currentCommandIndex++;
+            }
+        }else if(_LaunchSet_2_free){
+            if(this->throw_position_observed > Pos_2_free_RotStart_deg+RotStart_deg_adjust){
+                this->currentCommandIndex++;
+            }
+        }else if(_LaunchSet_3_free){
+            if(this->throw_position_observed > Pos_3_free_RotStart_deg+RotStart_deg_adjust){
+                this->currentCommandIndex++;
+            }
+        }else if(_LaunchSet_4_free){
+            if(this->throw_position_observed > Pos_4_free_RotStart_deg+RotStart_deg_adjust){
+                this->currentCommandIndex++;
+            }
+        }
+        NODELET_INFO("adjust_launchers_velocity_short");
+    }
+    else if(currentCommand == ControllerCommands::launch_start_waitstart)
+    {
+        this->arm_vel_msg.data = 0.5;
+        this->ArmVal_pub.publish(arm_vel_msg);
+        this->currentCommandIndex++;
     }
     else if(currentCommand == ControllerCommands::launch_short_start)
     {
@@ -1513,42 +1626,42 @@ void dr_nodelet_main::control_timer_callback(const ros::TimerEvent &event)
         //this->PitchLeftPos_pub.publish(this->pitch_left_pos_msg);
         while (!this->_launch_angle_reached)
         {
-            if(this->_LaunchSet_1_wall && this->throw_position_observed <= this->Pos_1_wall_RotStop_deg)
+            if(this->_LaunchSet_1_wall && this->throw_position_observed <= this->Pos_1_wall_RotStop_deg+this->RotStop_deg_adjust)
             {
                 this->_launch_angle_reached = true;
                 this->arm_vel_msg.data = this->Pos_1_wall_RotStop_cur;
                 this->ArmVal_pub.publish(arm_vel_msg);
-            }else if(this->_LaunchSet_2_wall && this->throw_position_observed <= this->Pos_2_wall_RotStop_deg)
+            }else if(this->_LaunchSet_2_wall && this->throw_position_observed <= this->Pos_2_wall_RotStop_deg+this->RotStop_deg_adjust)
             {
                 this->_launch_angle_reached = true;
                 this->arm_vel_msg.data = this->Pos_2_wall_RotStop_cur;
                 this->ArmVal_pub.publish(arm_vel_msg);
-            }else if(this->_LaunchSet_3_wall && this->throw_position_observed <= this->Pos_3_wall_RotStop_deg)
+            }else if(this->_LaunchSet_3_wall && this->throw_position_observed <= this->Pos_3_wall_RotStop_deg+this->RotStop_deg_adjust)
             {
                 this->_launch_angle_reached = true;
                 this->arm_vel_msg.data = this->Pos_3_wall_RotStop_cur;
                 this->ArmVal_pub.publish(arm_vel_msg);
-            }else if(this->_LaunchSet_4_wall && this->throw_position_observed <= this->Pos_4_wall_RotStop_deg)
+            }else if(this->_LaunchSet_4_wall && this->throw_position_observed <= this->Pos_4_wall_RotStop_deg+this->RotStop_deg_adjust)
             {
                 this->_launch_angle_reached = true;
                 this->arm_vel_msg.data = this->Pos_4_wall_RotStop_cur;
                 this->ArmVal_pub.publish(arm_vel_msg);
-            }else if(this->_LaunchSet_5_wall && this->throw_position_observed <= this->Pos_5_wall_RotStop_deg)
+            }else if(this->_LaunchSet_5_wall && this->throw_position_observed <= this->Pos_5_wall_RotStop_deg+this->RotStop_deg_adjust)
             {
                 this->_launch_angle_reached = true;
                 this->arm_vel_msg.data = this->Pos_5_wall_RotStop_cur;
                 this->ArmVal_pub.publish(arm_vel_msg);
-            }else if(this->_LaunchSet_2_free && this->throw_position_observed <= this->Pos_2_free_RotStop_deg)
+            }else if(this->_LaunchSet_2_free && this->throw_position_observed <= this->Pos_2_free_RotStop_deg+this->RotStop_deg_adjust)
             {
                 this->_launch_angle_reached = true;
                 this->arm_vel_msg.data = this->Pos_2_free_RotStop_cur;
                 this->ArmVal_pub.publish(arm_vel_msg);
-            }else if(this->_LaunchSet_3_free && this->throw_position_observed <= this->Pos_3_free_RotStop_deg)
+            }else if(this->_LaunchSet_3_free && this->throw_position_observed <= this->Pos_3_free_RotStop_deg+this->RotStop_deg_adjust)
             {
                 this->_launch_angle_reached = true;
                 this->arm_vel_msg.data = this->Pos_3_free_RotStop_cur;
                 this->ArmVal_pub.publish(arm_vel_msg);
-            }else if(this->_LaunchSet_4_free && this->throw_position_observed <= this->Pos_4_free_RotStop_deg)
+            }else if(this->_LaunchSet_4_free && this->throw_position_observed <= this->Pos_4_free_RotStop_deg+this->RotStop_deg_adjust)
             {
                 this->_launch_angle_reached = true;
                 this->arm_vel_msg.data = this->Pos_4_free_RotStop_cur;
@@ -1571,27 +1684,18 @@ void dr_nodelet_main::control_timer_callback(const ros::TimerEvent &event)
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
         this->arm_vel_msg.data = 0;
         this->ArmVal_pub.publish(arm_vel_msg);
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        this->arm_vel_msg.data = 0;
-        this->ArmVal_pub.publish(arm_vel_msg);
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        this->arm_vel_msg.data = 0;
-        this->ArmVal_pub.publish(arm_vel_msg);
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        this->arm_vel_msg.data = 0;
-        this->ArmVal_pub.publish(arm_vel_msg);
-        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+        //std::this_thread::sleep_for(std::chrono::milliseconds(2300));
         //this->rotate_arm_to_first_posi();
         //this->rotate_arm_to_first_posi();
         //this->rotate_arm_to_first_posi();
-        this->homing();
+        //this->homing();
         this->currentCommandIndex++;
         NODELET_INFO("launch_and_home");
         this->_launch_angle_reached = false;
     }
     else if(currentCommand == ControllerCommands::Pitch_MV_Zero)
     {
-        this->pitch_right_pos_msg.data = -0.0;
+        this->pitch_right_pos_msg.data = -0.3;
         this->PitchRightPos_pub.publish(this->pitch_right_pos_msg);
         this->pitch_left_pos_msg.data = 0.0;
         this->PitchLeftPos_pub.publish(this->pitch_left_pos_msg);

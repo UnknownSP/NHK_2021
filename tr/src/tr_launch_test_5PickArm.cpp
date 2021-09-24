@@ -76,6 +76,11 @@ enum class ControllerCommands : uint16_t
     arrowadjust_release,
 
     riseflag_shooter_pos_load,
+
+    shooter_init_reachcheck,
+    shooter_load_wait_reachcheck,
+    shooter_load_reachcheck,
+    angle_load_reachcheck,
     //-------------------------------------------
 };
 
@@ -129,7 +134,8 @@ class tr_nodelet_main : public nodelet::Nodelet
     void joyCallback(const sensor_msgs::Joy::ConstPtr &msg);
     void control_timer_callback(const ros::TimerEvent &event);
 
-
+    void ShotPower_PosCallback(const std_msgs::Float32::ConstPtr& msg);
+    void ShotAngle_PosCallback(const std_msgs::Float32::ConstPtr& msg);
 
     //double LaunchMaximumradian;
     //double LaunchMinimumradian;
@@ -156,9 +162,11 @@ class tr_nodelet_main : public nodelet::Nodelet
 
     ros::NodeHandle nh;
   	ros::NodeHandle _nh;
+  	ros::NodeHandle nh_MT;
 
     ros::Subscriber joy_sub;
-
+	ros::Subscriber ShotPower_Pos_sub;
+	ros::Subscriber ShotAngle_Pos_sub;
     
     std_msgs::UInt8 act_conf_cmd_msg;
 
@@ -371,6 +379,12 @@ class tr_nodelet_main : public nodelet::Nodelet
     bool _shooter_pos_load = false;
 
     double shot_power_adjust = 0.0;
+
+    double shot_power_position_observed = 0.0;
+    double shot_angle_position_observed = 0.0;
+
+    double shot_power_allowableerror = 0.0;
+    double shot_angle_allowableerror = 0.0;
     //----------------------------------------
 
     // flags
@@ -440,6 +454,7 @@ class tr_nodelet_main : public nodelet::Nodelet
     //------------------------------------------------------------------------
     static const std::vector<ControllerCommands> Shot_and_SetLoadPos_commands;
     static const std::vector<ControllerCommands> Shot_and_Load_commands;
+    static const std::vector<ControllerCommands> Shot_and_Load_Fast_commands;
     //------------------------------------------------------------------------
     const std::vector<ControllerCommands> *command_list;
 };
@@ -592,10 +607,77 @@ const std::vector<ControllerCommands> tr_nodelet_main::Shot_and_Load_commands(
     }
 );
 
+const std::vector<ControllerCommands> tr_nodelet_main::Shot_and_Load_Fast_commands(
+    {
+        ControllerCommands::shooter_release,
+        //
+        ControllerCommands::set_delay_100ms,
+        ControllerCommands::delay,
+        //
+        ControllerCommands::pick_slide_adjust,
+        ControllerCommands::shooter_init,
+        ControllerCommands::angle_load_wait,
+        //
+        ControllerCommands::set_delay_500ms,
+        ControllerCommands::delay,
+        //ControllerCommands::set_delay_500ms,
+        //ControllerCommands::delay,
+        //
+        ControllerCommands::pick_cyl_release,
+        ControllerCommands::set_delay_100ms,
+        ControllerCommands::delay,
+        ControllerCommands::pick_cyl_grab,
+        //
+        ControllerCommands::shooter_init_reachcheck,
+        //
+        ControllerCommands::shooter_grab,
+        ControllerCommands::shooter_move_load_wait,
+        //
+        //ControllerCommands::set_delay_100ms,
+        //ControllerCommands::delay,
+        //
+        ControllerCommands::pick_cyl_release,
+        ControllerCommands::set_delay_100ms,
+        ControllerCommands::delay,
+        ControllerCommands::pick_cyl_grab,
+        //
+        ControllerCommands::pick_slide_now_hand,
+        //
+        ControllerCommands::shooter_load_wait_reachcheck,
+        //
+        ControllerCommands::angle_load,
+        ControllerCommands::arrowadjust_grab,
+        //
+        ControllerCommands::angle_load_reachcheck,
+        //
+        ControllerCommands::shooter_move_load,
+        //
+        ControllerCommands::shooter_load_reachcheck,
+        //
+        ControllerCommands::arrowadjust_release,
+        ControllerCommands::pick_cyl_release,
+        ControllerCommands::pick_slide_release,
+        //
+        ControllerCommands::set_delay_100ms,
+        ControllerCommands::delay,
+        //
+        ControllerCommands::angle_avoid_loader,
+        //
+        ControllerCommands::set_delay_500ms,
+        ControllerCommands::delay,
+        //
+        ControllerCommands::pick_slide_next_adjust,
+    }
+);
+
 void tr_nodelet_main::onInit(){
     nh = getNodeHandle();
+    nh_MT = getMTNodeHandle();
     //constructor
     _nh = getPrivateNodeHandle();
+
+    this->ShotPower_Pos_sub = nh_MT.subscribe<std_msgs::Float32>("motor4_current_val", 10, &tr_nodelet_main::ShotPower_PosCallback, this);
+    this->ShotAngle_Pos_sub = nh_MT.subscribe<std_msgs::Float32>("motor5_current_val", 10, &tr_nodelet_main::ShotAngle_PosCallback, this);
 
     // related to launch
     //_nh.param("launch_max_radian", this->LaunchMaximumradian, 0.0);
@@ -653,6 +735,9 @@ void tr_nodelet_main::onInit(){
     _nh.param("shot_angle_4_load", this->shot_angle_4_load, 0.0);
     _nh.param("shot_angle_5_load", this->shot_angle_5_load, 0.0);
     _nh.param("shot_angle_load_adjust", this->shot_angle_load_adjust, 0.0);
+
+    _nh.param("shot_power_allowableerror", this->shot_power_allowableerror, 0.0);
+    _nh.param("shot_angle_allowableerror", this->shot_angle_allowableerror, 0.0);
 
     _nh.param("shot_power_launch_pos_1_wall", this->shot_power_launch_pos_1_wall, 0.0);
     _nh.param("shot_power_launch_pos_2_wall", this->shot_power_launch_pos_2_wall, 0.0);
@@ -728,6 +813,15 @@ void tr_nodelet_main::onInit(){
     this->current_OpMode = this->opmode[0];
 }
 
+void tr_nodelet_main::ShotPower_PosCallback(const std_msgs::Float32::ConstPtr& msg)
+{
+	this->shot_power_position_observed = msg->data;
+}
+
+void tr_nodelet_main::ShotAngle_PosCallback(const std_msgs::Float32::ConstPtr& msg)
+{
+	this->shot_angle_position_observed = msg->data;
+}
 
 void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
 {
@@ -823,7 +917,7 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
                 Load_position = 1;
                 PickSlide_mv_picking();
             }else{
-                this->command_list = &Shot_and_Load_commands;
+                this->command_list = &Shot_and_Load_Fast_commands;
                 _command_ongoing = true;
                 if(Load_position == 5){
                     _load_end = true;
@@ -1203,7 +1297,7 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
         }
         */
 
-        if(/*!_loading &&*/ (_b)){
+        if(/*!_loading &&*/ (_b) && _b_enable){
             _load_end = false;
             Load_mode = -1;
             if(_b){           
@@ -1241,10 +1335,12 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
                 case 2:
                     PickSlide_mv_1_adjust();
                     Cyl_rotate_hands_load();
+                    Load_position = 1;
                     break;
 
                 case 3:
-                    Cyl_rotate_hands_stop();
+                    Cyl_rotate_hands_load();
+                    Load_position = 1;
                     break;
 
                 case 4:
@@ -1254,6 +1350,8 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
                     break;
                 }
             }
+        }else if(!_b){
+            _b_enable = true;
         }
         //------------------------------------------------------------
 
@@ -1978,6 +2076,30 @@ void tr_nodelet_main::control_timer_callback(const ros::TimerEvent &event)
     {
         this->_shooter_pos_load = true;
         this->currentCommandIndex++;
+    }
+    else if (currentCommand == ControllerCommands::shooter_init_reachcheck)
+    {
+        if(this->shot_power_position_observed < shot_power_shooter_init + shot_power_allowableerror){
+            this->currentCommandIndex++;
+        }
+    }
+    else if (currentCommand == ControllerCommands::shooter_load_reachcheck)
+    {
+        if(this->shot_power_position_observed < shot_power_load + shot_power_allowableerror){
+            this->currentCommandIndex++;
+        }
+    }
+    else if (currentCommand == ControllerCommands::shooter_load_wait_reachcheck)
+    {
+        if(this->shot_power_position_observed > shot_power_load_wait - shot_power_allowableerror){
+            this->currentCommandIndex++;
+        }
+    }
+    else if (currentCommand == ControllerCommands::angle_load_reachcheck)
+    {
+        if(this->shot_angle_position_observed < shot_angle_1_load + shot_angle_allowableerror){
+            this->currentCommandIndex++;
+        }
     }
     
     if(this->command_list->size() <= (int)this->currentCommandIndex)
