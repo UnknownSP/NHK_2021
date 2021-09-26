@@ -1003,7 +1003,7 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
         //if(_loaded && !_loading ){
             //shot_power_adjust += joy->buttons[ButtonLeftThumb] * 2;
             //shot_power_adjust -= joy->buttons[ButtonRightThumb] * 2;
-        if((joy->buttons[ButtonRightThumb] == 0.0) && (joy->buttons[ButtonLeftThumb] == 0.0)){
+        if(/*(joy->buttons[ButtonRightThumb] == 0.0) &&*/ (joy->buttons[ButtonLeftThumb] == 0.0)){
             if(_lb){
                 if(_pady == 1){
                     Shot_Power_move_target(shot_power_launch_pos_2);
@@ -1024,7 +1024,7 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
                     Shot_Angle_move_target(shot_angle_launch_pos_5);
                 }
             }
-        }else if((joy->buttons[ButtonRightThumb] == 1.0) && (joy->buttons[ButtonLeftThumb] == 1.0)){
+        }else if(/*(joy->buttons[ButtonRightThumb] == 1.0) && */(joy->buttons[ButtonLeftThumb] == 1.0)){
             if(_lb && _rb){
                 if(_pady == 1){
                     Shot_Power_move_target(shot_power_shooter_init);
@@ -1101,23 +1101,23 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
             switch (Load_position)
             {
             case 1:
-                PickSlide_mv_1_load();
+                PickSlide_mv_1_adjust();
                 break;
 
             case 2:
-                PickSlide_mv_2_load();
+                PickSlide_mv_2_adjust();
                 break;
 
             case 3:
-                PickSlide_mv_3_load();
+                PickSlide_mv_3_adjust();
                 break;
 
             case 4:
-                PickSlide_mv_4_load();
+                PickSlide_mv_4_adjust();
                 break;
 
             case 5:
-                PickSlide_mv_5_load();
+                PickSlide_mv_5_adjust();
                 break;
             }
         }

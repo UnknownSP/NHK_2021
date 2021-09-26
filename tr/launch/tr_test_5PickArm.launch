@@ -127,7 +127,7 @@
       <param name="shot_power_launch_pos_5" type="double" value="-7.5"   /> <param name="shot_angle_launch_pos_5" type="double" value="300" />
 
       <param name="shot_power_launch_pos_1_sz" type="double" value="-6.5" /> <param name="shot_angle_launch_pos_1_sz" type="double" value="308" />
-      <param name="shot_power_launch_pos_2_sz" type="double" value="-4.0"   /> <param name="shot_angle_launch_pos_2_sz" type="double" value="325" />
+      <param name="shot_power_launch_pos_2_sz" type="double" value="-3.5"   /> <param name="shot_angle_launch_pos_2_sz" type="double" value="325" />
       <param name="shot_power_launch_pos_3_sz" type="double" value="-10.3"/> <param name="shot_angle_launch_pos_3_sz" type="double" value="285" />
       <param name="shot_power_launch_pos_4_sz" type="double" value="-14.5"/> <param name="shot_angle_launch_pos_4_sz" type="double" value="250" />
       <param name="shot_power_launch_pos_5_sz" type="double" value="-15.2"  /> <param name="shot_angle_launch_pos_5_sz" type="double" value="240" />
