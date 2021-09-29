@@ -103,21 +103,21 @@
       <param name="Pos_3_wall_RotStop_cur" type="double" value="0.0" />
       <param name="pitch_3_wall_deg" type="double" value="-1.5" />
 
-      <param name="Pos_4_wall_RotStart_deg" type="double" value="1.61" />
+      <param name="Pos_4_wall_RotStart_deg" type="double" value="1.53" />
       <param name="Pos_4_wall_RotStop_deg" type="double" value="1.0" />
       <param name="Pos_4_wall_RotStart_cur" type="double" value="-40" />
       <param name="Pos_4_wall_RotStop_cur" type="double" value="0.0" />
       <param name="pitch_4_wall_deg" type="double" value="-1.5" />
 
-      <param name="Pos_5_wall_RotStart_deg" type="double" value="1.70" />
-      <param name="Pos_5_wall_RotStop_deg" type="double" value="1.0" />
+      <param name="Pos_5_wall_RotStart_deg" type="double" value="1.75" />
+      <param name="Pos_5_wall_RotStop_deg" type="double" value="0.8" />
       <param name="Pos_5_wall_RotStart_cur" type="double" value="-100" />
       <param name="Pos_5_wall_RotStop_cur" type="double" value="0.0" />
       <param name="pitch_5_wall_deg" type="double" value="-1.5" />
 
-      <param name="Pos_2_free_RotStart_deg" type="double" value="1.69" />
-      <param name="Pos_2_free_RotStop_deg" type="double" value="1.0" />
-      <param name="Pos_2_free_RotStart_cur" type="double" value="-43" />
+      <param name="Pos_2_free_RotStart_deg" type="double" value="1.72" />
+      <param name="Pos_2_free_RotStop_deg" type="double" value="0.7" />
+      <param name="Pos_2_free_RotStart_cur" type="double" value="-60" />
       <param name="Pos_2_free_RotStop_cur" type="double" value="0.0" />
       <param name="pitch_2_free_deg" type="double" value="-1.5" />
 
@@ -196,6 +196,7 @@
       <param name="Arrow_Pick_Rack_Arm_deg" type="double" value="-2.05" />
       <param name="Arrow_Adjust_Hight_Rack_Arm_deg" type="double" value="-1.95" />
       <param name="Arrow_Adjust_Rack_Arm_deg" type="double" value="1.1" />
+      <param name="ArmAvoid_inner_deg" type="double" value="-2.8" />
     	<!-- <param name="launch_short_vel" type="double" value="14.75" /> -->
     	<!-- <param name="launch_short_pos" type="double" value="7.7" /> -->
       <!-- 2m80 iikanzi
