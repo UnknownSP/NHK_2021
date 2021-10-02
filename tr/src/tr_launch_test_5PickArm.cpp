@@ -1301,7 +1301,7 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
             _load_end = false;
             Load_mode = -1;
             if(_b){           
-                if(Pick_mode == 4){
+                if(Pick_mode == 3){
                     Pick_mode = 0;
                 }else{
                     Pick_mode++;
@@ -1339,11 +1339,6 @@ void tr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
                     break;
 
                 case 3:
-                    Cyl_rotate_hands_load();
-                    Load_position = 1;
-                    break;
-
-                case 4:
                     PickSlide_mv_1_adjust();
                     Cyl_rotate_hands_load();
                     Load_position = 1;

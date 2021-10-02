@@ -61,21 +61,6 @@
     
     <node pkg="nodelet" type="nodelet" name="tr_nodelet_main" args="$(arg nodelet_mode) tr/tr_nodelet_main $(arg manager_name)" >
       
-      <!--<param name="PickSlide_startzone" type="double" value="-25" />
-      <param name="PickSlide_picking" type="double" value="-20" />
-      <param name="PickSlide_avoidlauncher" type="double" value="-22.5" />
-      <param name="PickSlide_1_load" type="double" value="-1.1" />
-      <param name="PickSlide_1_release" type="double" value="-0.5" />
-      <param name="PickSlide_2_load" type="double" value="-13.2" />
-      <param name="PickSlide_2_release" type="double" value="-12.6" />
-      <param name="PickSlide_3_load" type="double" value="-26.6" />
-      <param name="PickSlide_3_release" type="double" value="-26.0" />
-      <param name="PickSlide_4_load" type="double" value="-39.6" />
-      <param name="PickSlide_4_release" type="double" value="-39.0" />
-      <param name="PickSlide_5_load" type="double" value="-52.8" />
-      <param name="PickSlide_5_release" type="double" value="-52.2" />
-      -->
-
       <param name="PickSlide_startzone" type="double" value="27.6" />
       <param name="PickSlide_picking" type="double" value="28.0" />
       <param name="PickSlide_avoidlauncher" type="double" value="32.5" />
@@ -127,33 +112,30 @@
       <param name="shot_power_launch_pos_5" type="double" value="-7.5"   /> <param name="shot_angle_launch_pos_5" type="double" value="300" />
 
       <param name="shot_power_launch_pos_1_sz" type="double" value="-6.5" /> <param name="shot_angle_launch_pos_1_sz" type="double" value="308" />
-      <param name="shot_power_launch_pos_2_sz" type="double" value="-3.5"   /> <param name="shot_angle_launch_pos_2_sz" type="double" value="325" />
+      <param name="shot_power_launch_pos_2_sz" type="double" value="-3.0"   /> <param name="shot_angle_launch_pos_2_sz" type="double" value="325" />
+      <param name="shot_power_launch_pos_3_sz" type="double" value="-10.3"/> <param name="shot_angle_launch_pos_3_sz" type="double" value="285" />
+      <param name="shot_power_launch_pos_4_sz" type="double" value="-14.7"/> <param name="shot_angle_launch_pos_4_sz" type="double" value="250" />
+      <param name="shot_power_launch_pos_5_sz" type="double" value="-15.4"  /> <param name="shot_angle_launch_pos_5_sz" type="double" value="240" />
+
+      <!-- ~10/2
+      <param name="shot_power_launch_pos_1" type="double" value="-14.8"  /> <param name="shot_angle_launch_pos_1" type="double" value="240" />
+      <param name="shot_power_launch_pos_2" type="double" value="-4"   /> <param name="shot_angle_launch_pos_2" type="double" value="325" />
+      <param name="shot_power_launch_pos_3" type="double" value="-12.0"/> <param name="shot_angle_launch_pos_3" type="double" value="280" />
+      <param name="shot_power_launch_pos_4" type="double" value="-15"/> <param name="shot_angle_launch_pos_4" type="double" value="240" />
+      <param name="shot_power_launch_pos_5" type="double" value="-7.5"   /> <param name="shot_angle_launch_pos_5" type="double" value="300" />
+
+      <param name="shot_power_launch_pos_1_sz" type="double" value="-6.5" /> <param name="shot_angle_launch_pos_1_sz" type="double" value="308" />
+      <param name="shot_power_launch_pos_2_sz" type="double" value="-3.0"   /> <param name="shot_angle_launch_pos_2_sz" type="double" value="325" />
       <param name="shot_power_launch_pos_3_sz" type="double" value="-10.3"/> <param name="shot_angle_launch_pos_3_sz" type="double" value="285" />
       <param name="shot_power_launch_pos_4_sz" type="double" value="-14.5"/> <param name="shot_angle_launch_pos_4_sz" type="double" value="250" />
       <param name="shot_power_launch_pos_5_sz" type="double" value="-15.2"  /> <param name="shot_angle_launch_pos_5_sz" type="double" value="240" />
+      -->
 
       <param name="shot_angle_avoid_loader" type="double" value="150.0" />
       <param name="shot_angle_avoid_loader_arrow" type="double" value="45.0" />
       <param name="shot_angle_load_wait" type="double" value="65.0" />
       <param name="shot_angle_load" type="double" value="5.0" />
 
-      <!-- <param name="shot_power_launch_pos_1_wall" type="double" value="-14.5" />
-      <param name="shot_power_launch_pos_2_wall" type="double" value="-12.3" />
-      <param name="shot_power_launch_pos_3_wall" type="double" value="-3.2" />
-      <param name="shot_power_launch_pos_4_wall" type="double" value="0.0" />
-      <param name="shot_angle_launch_pos_1_wall" type="double" value="130" /> 
-      <param name="shot_angle_launch_pos_2_wall" type="double" value="220" /> 
-      <param name="shot_angle_launch_pos_3_wall" type="double" value="245" />  
-      <param name="shot_angle_launch_pos_4_wall" type="double" value="235.0" /> -->
-
-      <!-- wall kara 3 gata pod
-      <param name="shot_angle_launch_pos_2_wall" type="double" value="210.0" />
-      <param name="shot_power_launch_pos_2_wall" type="double" value="-7.5" />
-      -->
-      <!-- wall kara 2 gata pod oku
-      <param name="shot_angle_launch_pos_4_wall" type="double" value="240.0" />
-      <param name="shot_power_launch_pos_4_wall" type="double" value="-4.5" />
-      -->
 
       <param name="shot_power_launch_pos_1_wall" type="double" value="-6.0"  />
       <param name="shot_power_launch_pos_2_wall" type="double" value="-15.0" />
@@ -163,21 +145,6 @@
       <param name="shot_angle_launch_pos_2_wall" type="double" value="240.0" />
       <param name="shot_angle_launch_pos_3_wall" type="double" value="302.5" />
       <param name="shot_angle_launch_pos_4_wall" type="double" value="280.0" />
-
-      <!-- rack kara 2 gata pod oku
-      <param name="shot_power_launch_pos_2_wall" type="double" value="-5.0" />
-      <param name="shot_angle_launch_pos_2_wall" type="double" value="302.5" />
-      -->
-
-      <!-- rack kara 3 gata pod
-      <param name="shot_power_launch_pos_3_wall" type="double" value="-11.5" />
-      <param name="shot_angle_launch_pos_3_wall" type="double" value="280.0" />
-      -->
-
-      <!-- rack kara 1 gata pod temae
-      <param name="shot_power_launch_pos_2_wall" type="double" value="-15.0" />
-      <param name="shot_angle_launch_pos_2_wall" type="double" value="240.0" />
-      -->
 
     </node>
 

@@ -89,14 +89,6 @@
       <param name="Pos_2_wall_RotStop_cur" type="double" value="0.0" />
       <param name="pitch_2_wall_deg" type="double" value="-1.5" />
 
-      <!--
-      <param name="Pos_3_wall_RotStart_deg" type="double" value="1.68" />
-      <param name="Pos_3_wall_RotStop_deg" type="double" value="1.0" />
-      <param name="Pos_3_wall_RotStart_cur" type="double" value="-37" />
-      <param name="Pos_3_wall_RotStop_cur" type="double" value="0.0" />
-      <param name="pitch_3_wall_deg" type="double" value="-1.6" />
-      -->
-
       <param name="Pos_3_wall_RotStart_deg" type="double" value="1.62" />
       <param name="Pos_3_wall_RotStop_deg" type="double" value="1.0" />
       <param name="Pos_3_wall_RotStart_cur" type="double" value="-38.5" />

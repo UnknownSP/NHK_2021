@@ -93,9 +93,11 @@ enum class SolenoidValveCommands : uint8_t
     shutdown_cmd      = 0b000000,
     recover_cmd       = 0b000001,
     
-    Cyl_Catch_release_cmd  = 0b000010,//default open
-    lift_arrow_cmd           = 0b010000,//default down
-    spread_palm_cmd          = 0b100000,//default release
+    Cyl_Catch_release_cmd   = 0b0100000,//default open
+    lift_arrow_cmd          = 0b1000000,//default down
+    Cyl_Arm_cmd             = 0b0000001,//default release
+    Cyl_GrabTable_cmd       = 0b0010000,
+
 };
 
 enum class MotorCommands : uint8_t
@@ -147,6 +149,8 @@ private:
     void Cyl_Catch_release();
     void Cyl_Lift_up();
     void Cyl_Lift_down();
+    void Cyl_GrabTable_grab();
+    void Cyl_GrabTable_release();
 
 
     void next_OpMode();
@@ -855,14 +859,14 @@ void dr_nodelet_main::PosCallback(const std_msgs::Float32::ConstPtr& msg)
 }
 
 void dr_nodelet_main::Cyl_Arm_grab_arrow(void){
-    this->lastSolenoidOrder |= (uint8_t)SolenoidValveCommands::spread_palm_cmd;
+    this->lastSolenoidOrder |= (uint8_t)SolenoidValveCommands::Cyl_Arm_cmd;
     this->solenoid_order_msg.data = this->lastSolenoidOrder;
     this->SolenoidOrder_pub.publish(this->solenoid_order_msg);
     this->SolenoidOrder_pub.publish(this->solenoid_order_msg);
 }
 
 void dr_nodelet_main::Cyl_Arm_release_arrow(void){
-    this->lastSolenoidOrder &= ~(uint8_t)SolenoidValveCommands::spread_palm_cmd;
+    this->lastSolenoidOrder &= ~(uint8_t)SolenoidValveCommands::Cyl_Arm_cmd;
     this->solenoid_order_msg.data = this->lastSolenoidOrder;
     this->SolenoidOrder_pub.publish(this->solenoid_order_msg);
     this->SolenoidOrder_pub.publish(this->solenoid_order_msg);
@@ -917,6 +921,21 @@ void dr_nodelet_main::Cyl_Lift_down(void)
     this->SolenoidOrder_pub.publish(this->solenoid_order_msg);
     this->SolenoidOrder_pub.publish(this->solenoid_order_msg);
 }
+void dr_nodelet_main::Cyl_GrabTable_grab(void)
+{
+    this->lastSolenoidOrder |= (uint8_t)SolenoidValveCommands::Cyl_GrabTable_cmd;
+    this->solenoid_order_msg.data = this->lastSolenoidOrder;
+    this->SolenoidOrder_pub.publish(this->solenoid_order_msg);
+    this->SolenoidOrder_pub.publish(this->solenoid_order_msg);
+}
+void dr_nodelet_main::Cyl_GrabTable_release(void)
+{
+    this->lastSolenoidOrder &= ~(uint8_t)SolenoidValveCommands::Cyl_GrabTable_cmd;
+    this->solenoid_order_msg.data = this->lastSolenoidOrder;
+    this->SolenoidOrder_pub.publish(this->solenoid_order_msg);
+    this->SolenoidOrder_pub.publish(this->solenoid_order_msg);
+}
+
 /**************************************************************************************/
 void dr_nodelet_main::shutdown(void){
     act_conf_cmd_msg.data = (uint8_t)MotorCommands::shutdown_cmd;
@@ -995,6 +1014,7 @@ void dr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
     static bool _Cyl_catch = false;
     static bool _x_enable = false;
     static bool _Cyl_arm = false;
+    static bool _Cyl_table = false;
 
     this->_a = joy->buttons[ButtonA];
     this->_b = joy->buttons[ButtonB];
@@ -1021,6 +1041,7 @@ void dr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
         Cyl_Lift_down();
         Cyl_Arm_release_arrow();
         Cyl_Catch_release();
+        Cyl_GrabTable_release();
         this->last_arm_deg = 0.0;
         this->adjust_arm_deg = 0.0;
     }
@@ -1032,24 +1053,34 @@ void dr_nodelet_main::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
     }
     if (_b && _b_enable)
     {
-        if(_Cyl_catch){
-            Cyl_Catch_release();
-            _Cyl_catch = false;
+        if(_Cyl_table){
+            Cyl_GrabTable_release();
+            _Cyl_table = false;
         }else{
-            Cyl_Catch_grab();
-            _Cyl_catch = true;
+            Cyl_GrabTable_grab();
+            _Cyl_table = true;
         }
         _b_enable = false;
     }else{
         _b_enable = true;
     }
-    if (_x){
-        if(_Cyl_arm){
-            Cyl_Arm_grab_arrow();
-            _Cyl_arm = false;
+    if (_x && _x_enable){
+        if(_rb){
+            if(_Cyl_arm){
+                Cyl_Arm_grab_arrow();
+                _Cyl_arm = false;
+            }else{
+                Cyl_Arm_release_arrow();
+                _Cyl_arm = true;
+            }
         }else{
-            Cyl_Arm_release_arrow();
-            _Cyl_arm = true;
+            if(_Cyl_catch){
+                Cyl_Catch_release();
+                _Cyl_catch = false;
+            }else{
+                Cyl_Catch_grab();
+                _Cyl_catch = true;
+            }    
         }
         _x_enable = false;
     }else{
