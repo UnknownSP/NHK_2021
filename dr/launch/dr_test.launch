@@ -89,15 +89,15 @@
       <param name="Pos_2_wall_RotStop_cur" type="double" value="0.0" />
       <param name="pitch_2_wall_deg" type="double" value="-1.5" />
 
-      <param name="Pos_3_wall_RotStart_deg" type="double" value="1.62" />
+      <param name="Pos_3_wall_RotStart_deg" type="double" value="1.63" />
       <param name="Pos_3_wall_RotStop_deg" type="double" value="1.0" />
-      <param name="Pos_3_wall_RotStart_cur" type="double" value="-38.5" />
+      <param name="Pos_3_wall_RotStart_cur" type="double" value="-36.5" />
       <param name="Pos_3_wall_RotStop_cur" type="double" value="0.0" />
       <param name="pitch_3_wall_deg" type="double" value="-1.5" />
 
-      <param name="Pos_4_wall_RotStart_deg" type="double" value="1.53" />
+      <param name="Pos_4_wall_RotStart_deg" type="double" value="1.63" />
       <param name="Pos_4_wall_RotStop_deg" type="double" value="1.0" />
-      <param name="Pos_4_wall_RotStart_cur" type="double" value="-40" />
+      <param name="Pos_4_wall_RotStart_cur" type="double" value="-38" />
       <param name="Pos_4_wall_RotStop_cur" type="double" value="0.0" />
       <param name="pitch_4_wall_deg" type="double" value="-1.5" />
 
@@ -107,9 +107,16 @@
       <param name="Pos_5_wall_RotStop_cur" type="double" value="0.0" />
       <param name="pitch_5_wall_deg" type="double" value="-1.5" />
 
+      <!-- ~10/1
       <param name="Pos_2_free_RotStart_deg" type="double" value="1.72" />
       <param name="Pos_2_free_RotStop_deg" type="double" value="0.7" />
       <param name="Pos_2_free_RotStart_cur" type="double" value="-60" />
+      <param name="Pos_2_free_RotStop_cur" type="double" value="0.0" />
+      <param name="pitch_2_free_deg" type="double" value="-1.5" />
+      -->
+      <param name="Pos_2_free_RotStart_deg" type="double" value="1.765" />
+      <param name="Pos_2_free_RotStop_deg" type="double" value="0.9" />
+      <param name="Pos_2_free_RotStart_cur" type="double" value="-100" />
       <param name="Pos_2_free_RotStop_cur" type="double" value="0.0" />
       <param name="pitch_2_free_deg" type="double" value="-1.5" />
 

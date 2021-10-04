@@ -81,11 +81,11 @@
       <param name="PickSlide_4_adjust" type="double" value="22.0" />
       <param name="PickSlide_5_adjust" type="double" value="9.5" />
 
-      <param name="shot_angle_1_load" type="double" value="14.0" />
-      <param name="shot_angle_2_load" type="double" value="14.0" />
-      <param name="shot_angle_3_load" type="double" value="14.0" />
-      <param name="shot_angle_4_load" type="double" value="14.0" />
-      <param name="shot_angle_5_load" type="double" value="14.0" />
+      <param name="shot_angle_1_load" type="double" value="8.0" />
+      <param name="shot_angle_2_load" type="double" value="8.0" />
+      <param name="shot_angle_3_load" type="double" value="8.0" />
+      <param name="shot_angle_4_load" type="double" value="8.0" />
+      <param name="shot_angle_5_load" type="double" value="8.0" />
       <param name="shot_angle_load_adjust" type="double" value="0.0" />
 
       <param name="shot_power_shooter_init" type="double" value="-32.0" /> 
@@ -93,7 +93,7 @@
       <param name="shot_power_load_wait" type="double" value="-2.5" />
 
       <param name="shot_power_allowableerror" type="double" value="0.5" />
-      <param name="shot_angle_allowableerror" type="double" value="22.0" />
+      <param name="shot_angle_allowableerror" type="double" value="10.0" />
 
       <!--                    tr sz
                    5
@@ -109,7 +109,7 @@
       <param name="shot_power_launch_pos_2" type="double" value="-4"   /> <param name="shot_angle_launch_pos_2" type="double" value="325" />
       <param name="shot_power_launch_pos_3" type="double" value="-12.0"/> <param name="shot_angle_launch_pos_3" type="double" value="280" />
       <param name="shot_power_launch_pos_4" type="double" value="-15"/> <param name="shot_angle_launch_pos_4" type="double" value="240" />
-      <param name="shot_power_launch_pos_5" type="double" value="-7.5"   /> <param name="shot_angle_launch_pos_5" type="double" value="300" />
+      <param name="shot_power_launch_pos_5" type="double" value="-7.2"   /> <param name="shot_angle_launch_pos_5" type="double" value="300" />
 
       <param name="shot_power_launch_pos_1_sz" type="double" value="-6.5" /> <param name="shot_angle_launch_pos_1_sz" type="double" value="308" />
       <param name="shot_power_launch_pos_2_sz" type="double" value="-3.0"   /> <param name="shot_angle_launch_pos_2_sz" type="double" value="325" />
